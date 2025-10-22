@@ -18,7 +18,9 @@ export default function StoreAddProduct() {
     'Others',
   ];
 
-  const [images, setImages] = useState({ 1: null, 2: null, 3: null, 4: null });
+  const [images, setImages] = useState<{
+    [key: number]: File | null;
+  }>({ 1: null, 2: null, 3: null, 4: null });
   const [productInfo, setProductInfo] = useState({
     name: '',
     description: '',
@@ -28,7 +30,9 @@ export default function StoreAddProduct() {
   });
   const [loading, setLoading] = useState(false);
 
-  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeHandler = (
+    e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     setProductInfo({ ...productInfo, [e.target.name]: e.target.value });
   };
 
@@ -54,14 +58,23 @@ export default function StoreAddProduct() {
               width={300}
               height={300}
               className='h-15 w-auto border border-slate-200 rounded cursor-pointer'
-              src={images[key] ? URL.createObjectURL(images[key]) : assets.upload_area}
+              src={
+                images[Number(key)]
+                  ? URL.createObjectURL(images[Number(key)] as File)
+                  : assets.upload_area
+              }
               alt=''
             />
             <input
               type='file'
               accept='image/*'
               id={`images${key}`}
-              onChange={(e) => setImages({ ...images, [key]: e.target.files[0] })}
+              onChange={(e) =>
+                setImages({
+                  ...images,
+                  [Number(key)]: e.target.files && e.target.files[0] ? e.target.files[0] : null,
+                })
+              }
               hidden
             />
           </label>
@@ -103,7 +116,6 @@ export default function StoreAddProduct() {
             onChange={onChangeHandler}
             value={productInfo.mrp}
             placeholder='0'
-            rows={5}
             className='w-full max-w-45 p-2 px-4 outline-none border border-slate-200 rounded resize-none'
             required
           />
@@ -116,7 +128,6 @@ export default function StoreAddProduct() {
             onChange={onChangeHandler}
             value={productInfo.price}
             placeholder='0'
-            rows={5}
             className='w-full max-w-45 p-2 px-4 outline-none border border-slate-200 rounded resize-none'
             required
           />

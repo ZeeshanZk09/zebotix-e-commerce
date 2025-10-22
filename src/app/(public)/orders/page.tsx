@@ -2,7 +2,7 @@
 import PageTitle from '@/components/PageTitle';
 import { useEffect, useState } from 'react';
 import OrderItem from '@/components/OrderItem';
-import { orderDummyData } from '@/assets/assets';
+import { orderDummyData } from '../../../../public/assets/assets';
 import { Order } from '@/generated/prisma/browser';
 
 export default function Orders() {
