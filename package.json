@@ -7,19 +7,25 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "prisma:migrate:dev": "npx prisma migrate dev --schema=prisma/schema.prisma",
+    "prisma:generate": "npx prisma generate --schema=prisma/schema.prisma"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "@prisma/adapter-neon": "^6.17.1",
     "@reduxjs/toolkit": "^2.8.2",
     "@stackframe/react": "^2.8.44",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.525.0",
     "next": "16.0.0-beta.0",
+    "prisma": "^6.17.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hot-toast": "^2.5.2",
     "react-redux": "^9.2.0",
-    "recharts": "^3.1.2"
+    "recharts": "^3.1.2",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
@@ -27,6 +33,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/ws": "^8.18.1",
+    "bufferutil": "^4.0.9",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
