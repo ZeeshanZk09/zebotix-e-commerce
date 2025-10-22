@@ -9,13 +9,13 @@
     "lint": "biome check",
     "format": "biome format --write",
     "prisma:migrate:dev": "npx prisma migrate dev --schema=prisma/schema.prisma",
-    "prisma:generate": "npx prisma generate --schema=prisma/schema.prisma"
+    "logic": "node ./script.js",
+    "prisma:generate": "npx prisma g  enerate --schema=prisma/schema.prisma"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^6.17.1",
     "@reduxjs/toolkit": "^2.8.2",
-    "@stackframe/react": "^2.8.44",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.525.0",
     "next": "16.0.0-beta.0",

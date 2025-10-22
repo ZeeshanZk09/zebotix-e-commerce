@@ -1,6 +1,6 @@
 import React from 'react';
 import Title from './Title';
-import { ourSpecsData } from '@/assets/assets';
+import { ourSpecsData } from './../../public/assets/assets';
 
 const OurSpecs = () => {
   return (

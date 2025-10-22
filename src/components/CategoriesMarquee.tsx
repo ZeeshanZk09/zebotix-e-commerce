@@ -1,4 +1,4 @@
-import { categories } from '@/assets/assets';
+import { categories } from './../../public/assets/assets';
 
 const CategoriesMarquee = () => {
   return (

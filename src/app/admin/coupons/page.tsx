@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { DeleteIcon } from 'lucide-react';
-import { couponDummyData } from '@/assets/assets';
+import { couponDummyData } from './../../../../public/assets/assets';
 import { Coupon } from '@/generated/prisma/browser';
 
 export default function AdminCoupons() {

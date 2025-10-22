@@ -17,6 +17,12 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Role {
+  CUSTOMER
+  ADMIN
+  SELLER
+}
+
 // Required for creating a User: id, name, email, image, cart (optional JSON string)
 model User {
   id    String @id
@@ -24,7 +30,7 @@ model User {
   email String
   image String
   cart  Json   @default("{}")
-
+  role  Role   @default(CUSTOMER)
   // Relations
   ratings     Rating[]
   Address     Address[]

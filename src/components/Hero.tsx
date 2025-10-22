@@ -1,5 +1,5 @@
 'use client';
-import { assets } from '@/assets/assets';
+import { assets } from './../../public/assets/assets';
 import { ArrowRightIcon, ChevronRightIcon } from 'lucide-react';
 import Image from 'next/image';
 import CategoriesMarquee from './CategoriesMarquee';

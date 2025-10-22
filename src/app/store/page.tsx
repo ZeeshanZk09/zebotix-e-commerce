@@ -1,5 +1,5 @@
 'use client';
-import { dummyStoreDashboardData } from '@/assets/assets';
+import { dummyStoreDashboardData } from './../../../public/assets/assets';
 import Loading from '@/components/Loading';
 import { Rating } from '@/generated/prisma/browser';
 import { RatingCreateInput } from '@/generated/prisma/models';

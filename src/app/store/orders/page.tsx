@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Loading from '@/components/Loading';
-import { orderDummyData } from '@/assets/assets';
+import { orderDummyData } from './../../../../public/assets/assets';
 import { Order, OrderStatus } from '@/generated/prisma/browser';
 import { OrderCreateInput } from '@/generated/prisma/models';
 

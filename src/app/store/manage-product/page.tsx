@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import Loading from '@/components/Loading';
-import { productDummyData } from '@/assets/assets';
+import { productDummyData } from './../../../../public/assets/assets';
 import { Product } from '@/generated/prisma/browser';
 
 export default function StoreManageProducts() {

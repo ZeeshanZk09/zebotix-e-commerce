@@ -10,7 +10,3 @@ export default defineConfig({
     path: path.join('db', 'migrations'),
   },
 });
-
-//  path.join('db', 'formatting-migrations') ||
-
-//  path.join('prisma', 'schema.tmp.prisma') ||
