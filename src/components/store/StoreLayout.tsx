@@ -15,7 +15,13 @@ const StoreLayout = ({ children }: { children: React.ReactNode }) => {
 
   const fetchIsSeller = async () => {
     setIsSeller(true);
-    setStoreInfo(dummyStoreData);
+    const parsedStore = {
+      ...dummyStoreData,
+      logo: String(dummyStoreData.logo),
+      updatedAt: new Date(dummyStoreData.updatedAt),
+      createdAt: new Date(dummyStoreData.createdAt),
+    };
+    setStoreInfo(parsedStore);
     setLoading(false);
   };
 
@@ -29,7 +35,7 @@ const StoreLayout = ({ children }: { children: React.ReactNode }) => {
     <div className='flex flex-col h-screen'>
       <SellerNavbar />
       <div className='flex flex-1 items-start h-full overflow-y-scroll no-scrollbar'>
-        <SellerSidebar storeInfo={storeInfo} />
+        {storeInfo && <SellerSidebar storeInfo={storeInfo} />}
         <div className='flex-1 h-full p-5 lg:pl-12 lg:pt-12 overflow-y-scroll'>{children}</div>
       </div>
     </div>

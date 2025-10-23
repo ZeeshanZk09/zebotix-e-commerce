@@ -13,7 +13,13 @@ export default function StoreManageProducts() {
   const [products, setProducts] = useState<Product[]>([]);
 
   const fetchProducts = async () => {
-    setProducts(productDummyData);
+    const parsedProduct = productDummyData.map((c) => ({
+      ...c,
+      images: c.images.map((image) => String(image)),
+      updatedAt: new Date(c.updatedAt),
+      createdAt: new Date(c.createdAt),
+    }));
+    setProducts(parsedProduct);
     setLoading(false);
   };
 

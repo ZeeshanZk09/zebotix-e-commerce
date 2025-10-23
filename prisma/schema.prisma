@@ -6,14 +6,13 @@
 
 generator client {
   provider   = "prisma-client"
-  previewFeatures = ["driverAdapters"]
   engineType = "client"
   output     = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -25,12 +24,12 @@ enum Role {
 
 // Required for creating a User: id, name, email, image, cart (optional JSON string)
 model User {
-  id    String @id
-  name  String
-  email String
-  image String
-  cart  Json   @default("{}")
-  role  Role   @default(CUSTOMER)
+  id          String    @id
+  name        String
+  email       String
+  image       String
+  cart        Json      @default("{}")
+  role        Role      @default(CUSTOMER)
   // Relations
   ratings     Rating[]
   Address     Address[]

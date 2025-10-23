@@ -20,7 +20,12 @@ export default function AdminCoupons() {
   });
 
   const fetchCoupons = async () => {
-    setCoupons(couponDummyData);
+    const parsedCoupons = couponDummyData.map((c) => ({
+      ...c,
+      expiresAt: new Date(c.expiresAt),
+      createdAt: new Date(c.createdAt),
+    }));
+    setCoupons(parsedCoupons as unknown as Coupon[]);
   };
 
   const handleAddCoupon = async (e: React.FormEvent<HTMLFormElement>) => {

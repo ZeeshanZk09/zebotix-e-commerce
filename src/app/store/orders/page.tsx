@@ -20,8 +20,8 @@ export default function StoreOrders() {
     // Logic to update the status of an order
   };
 
-  const openModal = (order: Order) => {
-    setSelectedOrder(order);
+  const openModal = (order: Order | OrderCreateInput) => {
+    setSelectedOrder(order as OrderCreateInput);
     setIsModalOpen(true);
   };
 
@@ -71,7 +71,7 @@ export default function StoreOrders() {
                   <td className='px-4 py-3'>
                     {order.isCouponUsed ? (
                       <span className='bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full'>
-                        {order.coupon?.code}
+                        {(order.coupon as any)?.code}
                       </span>
                     ) : (
                       '—'
@@ -177,8 +177,9 @@ export default function StoreOrders() {
               </p>
               {selectedOrder.isCouponUsed && (
                 <p>
-                  <span className='text-green-700'>Coupon:</span> {selectedOrder.coupon.code} (
-                  {selectedOrder.coupon.discount}% off)
+                  <span className='text-green-700'>Coupon:</span>{' '}
+                  {(selectedOrder.coupon as any)?.code} ({(selectedOrder?.coupon as any)?.discount!}
+                  % off)
                 </p>
               )}
               <p>

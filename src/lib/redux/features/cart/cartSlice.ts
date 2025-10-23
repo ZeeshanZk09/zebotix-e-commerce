@@ -1,13 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { OrderItem } from '@/generated/prisma/browser';
+import { ProductCreateInput } from '@/generated/prisma/models';
+import { Product } from '@/generated/prisma/client';
 
-type CartItem = OrderItem & {
+type CartItem = Partial<OrderItem> & {
   quantity: number;
 };
 
 interface CartState {
   total: number;
-  cartItems: Record<string, CartItem>;
+  cartItems: { [productId: string]: CartItem };
 }
 
 const initialState: CartState = {
@@ -19,13 +21,17 @@ const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<{ productId: string; item?: OrderItem }>) => {
+    addToCart: (
+      state,
+      action: PayloadAction<{ productId: string; item?: OrderItem | ProductCreateInput | Product }>
+    ) => {
       const { productId, item } = action.payload;
 
       if (state.cartItems[productId]) {
         state.cartItems[productId].quantity += 1;
       } else {
-        state.cartItems[productId] = { ...item, quantity: 1 };
+        // avoid spreading undefined; provide a minimal fallback when item is not supplied
+        state.cartItems[productId] = { ...(item ?? { productId }), quantity: 1 };
       }
 
       state.total += 1;

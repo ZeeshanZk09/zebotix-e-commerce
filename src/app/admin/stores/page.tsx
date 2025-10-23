@@ -3,15 +3,22 @@ import { storesDummyData } from './../../../../public/assets/assets';
 import StoreInfo from '@/components/admin/StoreInfo';
 import Loading from '@/components/Loading';
 import { Store } from '@/generated/prisma/browser';
+import { StoreCreateInput } from '@/generated/prisma/models';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function AdminStores() {
-  const [stores, setStores] = useState<Store[]>([]);
+  const [stores, setStores] = useState<Store[] | StoreCreateInput[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStores = async () => {
-    setStores(storesDummyData);
+    const parsedStore = storesDummyData.map((c) => ({
+      ...c,
+      logo: String(c.logo),
+      updatedAt: new Date(c.updatedAt),
+      createdAt: new Date(c.createdAt),
+    }));
+    setStores(parsedStore);
     setLoading(false);
   };
 
@@ -37,7 +44,7 @@ export default function AdminStores() {
               className='bg-white border border-slate-200 rounded-lg shadow-sm p-6 flex max-md:flex-col gap-4 md:items-end max-w-4xl'
             >
               {/* Store Info */}
-              <StoreInfo store={store} />
+              <StoreInfo store={store as StoreCreateInput} />
 
               {/* Actions */}
               <div className='flex items-center gap-3 pt-2 flex-wrap'>
@@ -47,7 +54,7 @@ export default function AdminStores() {
                     type='checkbox'
                     className='sr-only peer'
                     onChange={() =>
-                      toast.promise(toggleIsActive(store.id), { loading: 'Updating data...' })
+                      toast.promise(toggleIsActive(store.id!), { loading: 'Updating data...' })
                     }
                     checked={store.isActive}
                   />

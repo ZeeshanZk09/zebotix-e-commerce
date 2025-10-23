@@ -7,11 +7,12 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { Address, Coupon, OrderItem } from '@/generated/prisma/browser';
+import { OrderItemCreateInput } from '@/generated/prisma/models';
 
 // ✅ Component props
 interface OrderSummaryProps {
   totalPrice: number;
-  items: OrderItem[];
+  items: OrderItemCreateInput[];
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
@@ -37,7 +38,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
         code: 'SAVE10',
         description: '10% off your order',
         discount: 10,
-      });
+      } as Coupon);
       toast.success('Coupon applied successfully!');
     } else {
       toast.error('Invalid coupon code');

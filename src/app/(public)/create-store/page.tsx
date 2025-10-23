@@ -5,6 +5,7 @@ import Image from 'next/image';
 import toast from 'react-hot-toast';
 import Loading from '@/components/Loading';
 import { Store } from '@/generated/prisma/browser';
+import { StoreCreateInput } from '@/generated/prisma/models';
 
 export default function CreateStore() {
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
@@ -12,14 +13,22 @@ export default function CreateStore() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
-  const [storeInfo, setStoreInfo] = useState<Store>({
+  const [storeInfo, setStoreInfo] = useState<StoreCreateInput>({
     name: '',
-    username: '',
     description: '',
+    username: '',
+    address: '',
     email: '',
     contact: '',
-    address: '',
-    image: '',
+    status: 'pending',
+    isActive: false,
+    updatedAt: new Date(),
+    createdAt: new Date(),
+    logo: '',
+    user: { connect: { id: '' } },
+    Product: { create: [] },
+    Order: { create: [] },
+    id: '',
   });
 
   const onChangeHandler = (
@@ -65,7 +74,9 @@ export default function CreateStore() {
             <label className='mt-10 cursor-pointer'>
               Store Logo
               <Image
-                src={storeInfo.image ? URL.createObjectURL(storeInfo.image) : assets.upload_area}
+                src={
+                  storeInfo.logo ? URL.createObjectURL(storeInfo.logo as any) : assets.upload_area
+                }
                 className='rounded-lg mt-2 h-16 w-auto'
                 alt=''
                 width={150}
@@ -74,7 +85,9 @@ export default function CreateStore() {
               <input
                 type='file'
                 accept='image/*'
-                onChange={(e) => setStoreInfo({ ...storeInfo, image: e.target.files?.[0] || '' })}
+                onChange={(e) =>
+                  setStoreInfo({ ...storeInfo, logo: e.target.files?.[0].name || '' })
+                }
                 hidden
               />
             </label>

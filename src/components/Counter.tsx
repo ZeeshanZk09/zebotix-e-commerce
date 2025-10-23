@@ -21,7 +21,7 @@ const Counter = ({ productId }: { productId: string }) => {
       <button onClick={removeFromCartHandler} className='p-1 select-none'>
         -
       </button>
-      <p className='p-1'>{cartItems[productId]}</p>
+      <p className='p-1'>{cartItems[productId]?.quantity ?? 0}</p>
       <button onClick={addToCartHandler} className='p-1 select-none'>
         +
       </button>

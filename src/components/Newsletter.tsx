@@ -1,7 +1,16 @@
+'use client';
 import React from 'react';
 import Title from './Title';
 
 const Newsletter = () => {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <div className='flex flex-col items-center mx-4 my-36'>
       <Title
@@ -22,13 +31,13 @@ const Newsletter = () => {
         </button>
       </div>
       {/* For Mobile */}
-      <div className='flex sm:hidden bg-slate-100 text-sm p-1 rounded-full w-full max-w-xl my-10 border-2 border-white ring ring-slate-200'>
+      <div className='flex items-center flex-col sm:hidden my-10 gap-4'>
         <input
-          className='flex-1 pl-5 outline-none'
+          className='pl-5 outline-none border-2 bg-slate-100 text-lg p-1 rounded-lg w-[88vw] border-white ring ring-slate-200'
           type='text'
           placeholder='Enter your email address'
         />
-        <button className='font-medium bg-green-500 text-white px-7 py-3 rounded-full hover:scale-103 active:scale-95 transition'>
+        <button className='w-fit text-base font-medium bg-green-500 text-white px-7 py-3 rounded-full hover:scale-103 active:scale-95 transition'>
           Get Updates
         </button>
       </div>

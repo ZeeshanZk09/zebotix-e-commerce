@@ -3,7 +3,7 @@ import { ProductCreateInput } from '@/generated/prisma/models';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface ProductState {
-  list: Product[];
+  list: (Product | ProductCreateInput)[];
 }
 
 const initialState: ProductState = {
@@ -13,10 +13,10 @@ const productSlice = createSlice({
   name: 'product',
   initialState,
   reducers: {
-    setProduct: (state: ProductState, action: PayloadAction<ProductCreateInput[]>) => {
+    setProduct: (state, action: PayloadAction<(Product | ProductCreateInput)[]>) => {
       state.list = action.payload;
     },
-    clearProduct: (state: ProductState) => {
+    clearProduct: (state) => {
       state.list = [];
     },
   },

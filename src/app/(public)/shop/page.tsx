@@ -4,6 +4,7 @@ import ProductCard from '@/components/ProductCard';
 import { MoveLeftIcon } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { ProductCreateInput } from '@/generated/prisma/models';
 
 function ShopContent() {
   // get query params ?search=abc
@@ -30,7 +31,7 @@ function ShopContent() {
         </h1>
         <div className='grid grid-cols-2 sm:flex flex-wrap gap-6 xl:gap-12 mx-auto mb-32'>
           {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product as ProductCreateInput} />
           ))}
         </div>
       </div>

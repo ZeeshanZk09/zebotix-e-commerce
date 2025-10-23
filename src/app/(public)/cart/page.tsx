@@ -3,6 +3,7 @@ import Counter from '@/components/Counter';
 import OrderSummary from '@/components/OrderSummary';
 import PageTitle from '@/components/PageTitle';
 import { OrderItem } from '@/generated/prisma/browser';
+import { OrderItemCreateInput } from '@/generated/prisma/models';
 import { deleteItemFromCart } from '@/lib/redux/features/cart/cartSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { Trash2Icon } from 'lucide-react';
@@ -17,20 +18,24 @@ export default function Cart() {
 
   const dispatch = useAppDispatch();
 
-  const [cartArray, setCartArray] = useState<OrderItem[]>([]);
+  const [cartArray, setCartArray] = useState<OrderItemCreateInput[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
 
   const createCartArray = () => {
     setTotalPrice(0);
-    const cartArray = [];
+    const cartArray: OrderItemCreateInput[] = [];
     for (const [key, value] of Object.entries(cartItems)) {
       const product = products.find((product) => product.id === key);
       if (product) {
         cartArray.push({
-          ...product,
-          quantity: value,
+          order: {
+            connect: { id: value?.orderId! },
+          },
+          product: { connect: { id: product.id } },
+          quantity: +value?.price!,
+          price: product.price,
         });
-        setTotalPrice((prev) => prev + product.price * value);
+        setTotalPrice((prev) => prev + product.price * +value);
       }
     }
     setCartArray(cartArray);
@@ -68,7 +73,11 @@ export default function Cart() {
                   <td className='flex gap-3 my-4'>
                     <div className='flex gap-3 items-center justify-center bg-slate-100 size-18 rounded-md'>
                       <Image
-                        src={item.images[0]}
+                        src={
+                          (Array.isArray(item.product.connect?.images) &&
+                            (item.product.connect?.images[0] as string)) ||
+                          ''
+                        }
                         className='h-14 w-auto'
                         alt=''
                         width={45}
@@ -76,8 +85,10 @@ export default function Cart() {
                       />
                     </div>
                     <div>
-                      <p className='max-sm:text-sm'>{item.name}</p>
-                      <p className='text-xs text-slate-500'>{item.category}</p>
+                      <p className='max-sm:text-sm'>{item.product?.connect?.name! as string}</p>
+                      <p className='text-xs text-slate-500'>
+                        {item?.product?.connect?.category as string}
+                      </p>
                       <p>
                         {currency}
                         {item.price}
@@ -85,7 +96,7 @@ export default function Cart() {
                     </div>
                   </td>
                   <td className='text-center'>
-                    <Counter productId={item.id} />
+                    <Counter productId={item.product?.connect?.id as string} />
                   </td>
                   <td className='text-center'>
                     {currency}
@@ -93,7 +104,7 @@ export default function Cart() {
                   </td>
                   <td className='text-center max-md:hidden'>
                     <button
-                      onClick={() => handleDeleteItemFromCart(item.id)}
+                      onClick={() => handleDeleteItemFromCart(item.product.connect?.id as string)}
                       className=' text-red-500 hover:bg-red-50 p-2.5 rounded-full active:scale-95 transition-all'
                     >
                       <Trash2Icon size={18} />

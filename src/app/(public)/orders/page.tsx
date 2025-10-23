@@ -9,7 +9,13 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    setOrders(orderDummyData);
+    const formattedOrders = orderDummyData.map((o) => ({
+      ...o,
+      createdAt: new Date(o.createdAt),
+      updatedAt: new Date(o.updatedAt),
+    })) as Order[];
+
+    setOrders(formattedOrders);
   }, []);
 
   return (
@@ -19,7 +25,7 @@ export default function Orders() {
           <PageTitle
             heading='My Orders'
             text={`Showing total ${orders.length} orders`}
-            linkText={'Go to home'}
+            linkText='Go to home'
           />
 
           <table className='w-full max-w-5xl text-slate-500 table-auto border-separate border-spacing-y-12 border-spacing-x-4'>
