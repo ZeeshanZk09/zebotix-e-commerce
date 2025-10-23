@@ -12,11 +12,13 @@
     "prisma:generate": "npx prisma generate --schema=prisma/schema.prisma"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.34.0",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^6.17.1",
     "@prisma/client": "^6.18.0",
     "@reduxjs/toolkit": "^2.8.2",
     "date-fns": "^4.1.0",
+    "inngest": "^3.44.3",
     "lucide-react": "^0.525.0",
     "next": "^16.0.0",
     "react": "19.1.0",
