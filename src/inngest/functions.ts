@@ -160,8 +160,6 @@ async function upsertUserToDb(user: any) {
         name: user.name ?? 'Unknown User',
         email: user.email ?? `unknown+${user.id}@example.com`,
         image: user.image ?? null,
-        cart: {},
-        role: 'USER',
       },
     });
     logInfo('upsertUserToDb', { ok: true, id: result.id });
