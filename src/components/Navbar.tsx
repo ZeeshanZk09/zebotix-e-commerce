@@ -3,19 +3,24 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { PackageIcon, Search, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUser, useClerk, UserButton } from '@clerk/nextjs';
 const Navbar = () => {
   const router = useRouter();
   const { user } = useUser();
   const { openSignIn } = useClerk();
   const [search, setSearch] = useState('');
+  const [mounted, setMounted] = useState(false);
   const cartCount = useAppSelector((state) => state.cart.total);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     router.push(`/shop?search=${search}`);
   };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <nav className='relative bg-white'>
@@ -59,7 +64,7 @@ const Navbar = () => {
               </button>
             </Link>
 
-            {user ? (
+            {mounted && user ? (
               <UserButton>
                 <UserButton.MenuItems>
                   <UserButton.Action
@@ -81,7 +86,7 @@ const Navbar = () => {
 
           {/* Mobile User Button  */}
           <div className='sm:hidden'>
-            {user ? (
+            {mounted && user ? (
               <>
                 <UserButton>
                   <UserButton.MenuItems>

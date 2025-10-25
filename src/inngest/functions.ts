@@ -131,18 +131,37 @@ async function upsertUserToDb(user: any) {
   }
 
   try {
+    function hideDbUrl(url?: string | null) {
+      if (!url) return 'MISSING';
+      try {
+        const u = new URL(url);
+        return `${u.protocol}//${u.host}/...`;
+      } catch {
+        return 'INVALID_URL';
+      }
+    }
+
+    // right before upsert
+    console.info('[DB DEBUG] process.env.DATABASE_URL =', hideDbUrl(process.env.DATABASE_URL));
+    console.info(
+      '[DB DEBUG] prisma client datasource:',
+      typeof Prisma === 'object' ? 'exists' : 'missing'
+    );
+
     const result = await Prisma.user.upsert({
       where: { id: user.id },
       update: {
-        name: user.name ?? undefined,
-        email: user.email ?? undefined,
-        image: user.image ?? undefined,
+        name: user.name ?? null,
+        email: user.email ?? null,
+        image: user.image ?? null,
       },
       create: {
         id: user.id,
-        name: user.name ?? undefined,
-        email: user.email ?? undefined,
-        image: user.image ?? undefined,
+        name: user.name ?? 'Unknown User',
+        email: user.email ?? `unknown+${user.id}@example.com`,
+        image: user.image ?? null,
+        cart: {},
+        role: 'USER',
       },
     });
     logInfo('upsertUserToDb', { ok: true, id: result.id });
@@ -161,8 +180,24 @@ async function upsertUserToDb(user: any) {
 
 export const syncUserCreation = inngest.createFunction(
   { id: 'sync-user-creation' },
-  { event: 'clerk/clerk.created' },
-  async ({ event }) => {
+  { event: 'user.created' },
+  async ({ event, step }) => {
+    logInfo(
+      'syncUserCreation',
+      'event.name=',
+      event?.name,
+      'event.type=',
+      (event as any)?.type,
+      'event.data?.type=',
+      event?.data?.type
+    );
+
+    // if this is not a Clerk user.created payload, skip
+    const incomingType = (event as any)?.type ?? event?.data?.type ?? event?.name;
+    if (!String(incomingType).includes('user.created')) {
+      logInfo('syncUserCreation', `Skipping non-user.created event: ${incomingType}`);
+      return;
+    }
     logInfo('syncUserCreation', {
       note: 'received event',
       id: event?.id,
@@ -216,7 +251,7 @@ export const syncUserCreation = inngest.createFunction(
 
 export const syncUserUpdation = inngest.createFunction(
   { id: 'sync-user-updation' },
-  { event: 'clerk/clerk.updated' },
+  { event: 'user.updated' },
   async ({ event }) => {
     logInfo('syncUserUpdation', {
       note: 'received event',
@@ -256,7 +291,7 @@ export const syncUserUpdation = inngest.createFunction(
 
 export const syncUserDeletion = inngest.createFunction(
   { id: 'sync-user-deletion' },
-  { event: 'clerk/clerk.deleted' },
+  { event: 'user.deleted' },
   async ({ event }) => {
     logInfo('syncUserDeletion', {
       note: 'received event',

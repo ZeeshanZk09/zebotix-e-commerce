@@ -1,25 +1,36 @@
+// src/lib/prisma.ts
 import 'dotenv/config';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { neonConfig } from '@neondatabase/serverless';
-import { PrismaClient } from '@/generated/prisma/client';
-
+import { PrismaClient as GeneratedPrismaClient } from '@/generated/prisma/client';
+import { PrismaClient as PrismaC } from '@prisma/client';
 import ws from 'ws';
-neonConfig.webSocketConstructor = ws;
 
-// To work in edge environments (Cloudflare Workers, Vercel Edge, etc.), enable querying over fetch
+neonConfig.webSocketConstructor = ws;
 neonConfig.poolQueryViaFetch = true;
 
-// Type definitions
 declare global {
-  var prisma: PrismaClient | undefined;
+  // allow globalThis.prisma to persist across module reloads in dev
+  // eslint-disable-next-line no-var
+  var prisma: PrismaC | undefined;
 }
 
-const connectionString = `${process.env.DATABASE_URL}`;
-
+const connectionString = String(process.env.DATABASE_URL || '');
 const adapter = new PrismaNeon({ connectionString });
-const Prisma = global.prisma || new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV === 'development') global.prisma = prisma;
+// create one client instance and cache it in globalThis for dev hot-reloads
+const prismaClient =
+  globalThis.prisma ??
+  new GeneratedPrismaClient({
+    adapter,
+    ...(process.env.NODE_ENV === 'development'
+      ? { log: ['query', 'info', 'warn', 'error'] as ('query' | 'info' | 'warn' | 'error')[] }
+      : {}),
+  });
 
-export default Prisma;
-export type Prisma = typeof Prisma;
+if (process.env.NODE_ENV === 'development') {
+  globalThis.prisma = prismaClient;
+}
+
+export default prismaClient;
+export type Prisma = typeof prismaClient;
