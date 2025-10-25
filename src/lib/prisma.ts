@@ -19,7 +19,7 @@ const connectionString = String(process.env.DATABASE_URL || '');
 const adapter = new PrismaNeon({ connectionString });
 
 // create one client instance and cache it in globalThis for dev hot-reloads
-const prismaClient =
+const Prisma =
   globalThis.prisma ??
   new GeneratedPrismaClient({
     adapter,
@@ -29,8 +29,8 @@ const prismaClient =
   });
 
 if (process.env.NODE_ENV === 'development') {
-  globalThis.prisma = prismaClient;
+  globalThis.prisma = Prisma;
 }
 
-export default prismaClient;
-export type Prisma = typeof prismaClient;
+export default Prisma as GeneratedPrismaClient;
+export type Prisma = typeof Prisma;

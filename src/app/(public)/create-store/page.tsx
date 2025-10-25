@@ -6,12 +6,18 @@ import toast from 'react-hot-toast';
 import Loading from '@/components/Loading';
 import { Store } from '@/generated/prisma/browser';
 import { StoreCreateInput } from '@/generated/prisma/models';
-
+import { useAuth, useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 export default function CreateStore() {
+  const { user } = useUser();
+  const router = useRouter();
+  const { getToken } = useAuth();
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
 
   const [storeInfo, setStoreInfo] = useState<StoreCreateInput>({
     name: '',
@@ -46,11 +52,58 @@ export default function CreateStore() {
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Logic to submit the store details
+    if (!user) {
+      toast('Please login to continue');
+    }
+    try {
+      const token = await getToken();
+      const formData = new FormData();
+      formData.append('name', storeInfo.name);
+      formData.append('username', storeInfo.username);
+      formData.append('description', storeInfo.description);
+      formData.append('address', storeInfo.address);
+      formData.append('email', storeInfo.email);
+      formData.append('contact', storeInfo.contact);
+      formData.append('image', storeInfo.logo);
+
+      const { data } = await axios.post('/api/store/create', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success(data.message);
+    } catch (error: any) {
+      console.log(error);
+      toast.error(error?.response?.data.error || error?.message || 'Something went wrong');
+    }
   };
 
   useEffect(() => {
+    if ((storeInfo.logo as any) instanceof File) {
+      const url = URL.createObjectURL(storeInfo.logo as any as Blob);
+      setPreviewUrl(url);
+
+      // revoke previous url when logo changes or component unmounts
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setPreviewUrl('');
+    }
     fetchSellerStatus();
-  }, []);
+  }, [storeInfo.logo]);
+
+  if (!user) {
+    return (
+      <div className='min-h-screen mx-6 flex items-center justify-center text-slate-400'>
+        <h1 className='text-2xl sm:text-4xl font-semibold'>
+          Please
+          <span className='text-slate-500'> login </span>
+          to continue
+        </h1>
+      </div>
+    );
+  }
 
   return !loading ? (
     <>
@@ -74,9 +127,7 @@ export default function CreateStore() {
             <label className='mt-10 cursor-pointer'>
               Store Logo
               <Image
-                src={
-                  storeInfo.logo ? URL.createObjectURL(storeInfo.logo as any) : assets.upload_area
-                }
+                src={previewUrl ? previewUrl : assets.upload_area}
                 className='rounded-lg mt-2 h-16 w-auto'
                 alt=''
                 width={150}
@@ -86,7 +137,7 @@ export default function CreateStore() {
                 type='file'
                 accept='image/*'
                 onChange={(e) =>
-                  setStoreInfo({ ...storeInfo, logo: e.target.files?.[0].name || '' })
+                  setStoreInfo({ ...storeInfo, logo: (e.target.files?.[0] as any) || '' })
                 }
                 hidden
               />
