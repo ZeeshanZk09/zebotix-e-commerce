@@ -180,7 +180,7 @@ async function upsertUserToDb(user: any) {
 
 export const syncUserCreation = inngest.createFunction(
   { id: 'sync-user-creation' },
-  { event: 'user.created' },
+  { event: 'clerk/user.created' },
   async ({ event, step }) => {
     logInfo(
       'syncUserCreation',
@@ -251,7 +251,7 @@ export const syncUserCreation = inngest.createFunction(
 
 export const syncUserUpdation = inngest.createFunction(
   { id: 'sync-user-updation' },
-  { event: 'user.updated' },
+  { event: 'clerk/user.updated' },
   async ({ event }) => {
     logInfo('syncUserUpdation', {
       note: 'received event',
@@ -291,7 +291,7 @@ export const syncUserUpdation = inngest.createFunction(
 
 export const syncUserDeletion = inngest.createFunction(
   { id: 'sync-user-deletion' },
-  { event: 'user.deleted' },
+  { event: 'clerk/user.deleted' },
   async ({ event }) => {
     logInfo('syncUserDeletion', {
       note: 'received event',
