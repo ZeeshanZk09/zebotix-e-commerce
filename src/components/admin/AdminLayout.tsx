@@ -1,24 +1,14 @@
 'use client';
-import { useEffect, useState } from 'react';
 import Loading from '../Loading';
 import Link from 'next/link';
 import { ArrowRightIcon } from 'lucide-react';
 import AdminNavbar from './AdminNavbar';
 import AdminSidebar from './AdminSidebar';
 import React from 'react';
+import { useAdmin } from '@/lib/hooks/useAdmin';
+
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const fetchIsAdmin = async () => {
-    setIsAdmin(true);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchIsAdmin();
-  }, []);
-
+  const { isAdmin, loading } = useAdmin();
   return loading ? (
     <Loading />
   ) : isAdmin ? (

@@ -30,8 +30,19 @@ export async function POST(request: NextRequest) {
     });
 
     return sendSuccessResponse(200, 'Product stock updated successfully');
-  } catch (error) {
-    console.error(error);
-    return sendErrorResponse(500, error instanceof Error ? error.message : 'Something went wrong');
+  } catch (err: any) {
+    console.error('[API] error', err);
+
+    // detect Neon/Prisma network/connect-timeout errors (relaxed check)
+    const isNetworkErr =
+      err?.message?.includes('fetch failed') ||
+      err?.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
+      err?.name === 'NeonDbError' ||
+      err?.code === 'ENOTFOUND';
+
+    if (isNetworkErr) {
+      return sendErrorResponse(503, isNetworkErr ? 'Service Unavailable' : err.message);
+    }
+    return sendErrorResponse(500, err instanceof Error ? err.message : 'Something went wrong');
   }
 }

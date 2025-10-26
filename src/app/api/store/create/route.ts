@@ -74,14 +74,25 @@ export async function POST(request: NextRequest) {
             id: newStore.id,
           },
         },
+        role: 'SELLER',
       },
     });
     return sendSuccessResponse(201, 'Applied waiting for approval', {});
-  } catch (error: any) {
-    if (error instanceof ImageKitUploadNetworkError) sendErrorResponse(400, 'Image upload failed');
+  } catch (err: any) {
+    if (err instanceof ImageKitUploadNetworkError) sendErrorResponse(400, 'Image upload failed');
+    console.error('[API] error', err);
 
-    console.error(error);
-    return sendErrorResponse(500, error instanceof Error ? error.message : 'Something went wrong');
+    // detect Neon/Prisma network/connect-timeout errors (relaxed check)
+    const isNetworkErr =
+      err?.message?.includes('fetch failed') ||
+      err?.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
+      err?.name === 'NeonDbError' ||
+      err?.code === 'ENOTFOUND';
+
+    if (isNetworkErr) {
+      return sendErrorResponse(503, isNetworkErr ? 'Service Unavailable' : err.message);
+    }
+    return sendErrorResponse(500, err instanceof Error ? err.message : 'Something went wrong');
   }
 }
 
@@ -96,16 +107,35 @@ export async function GET(request: NextRequest) {
       },
     });
     if (store) {
-      return sendSuccessResponse(200, 'Store found', {
-        status: store.status,
-      });
+      return sendSuccessResponse(
+        200,
+        store.status === 'approved'
+          ? 'Store registered'
+          : store.status === 'rejected'
+          ? 'Store rejected'
+          : 'Your store request is pending, please wait for admin to approve your store',
+        {
+          status: store.status,
+        }
+      );
     }
 
-    return sendSuccessResponse(200, 'Store not registered');
-  } catch (error) {
-    if (error instanceof ImageKitUploadNetworkError) sendErrorResponse(400, 'Image upload failed');
+    return sendSuccessResponse(200, 'Store not registered', null);
+  } catch (err: any) {
+    if (err instanceof ImageKitUploadNetworkError) sendErrorResponse(400, 'Image upload failed');
 
-    console.error(error);
-    return sendErrorResponse(500, error instanceof Error ? error.message : 'Something went wrong');
+    console.error('[API] error', err);
+
+    // detect Neon/Prisma network/connect-timeout errors (relaxed check)
+    const isNetworkErr =
+      err?.message?.includes('fetch failed') ||
+      err?.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
+      err?.name === 'NeonDbError' ||
+      err?.code === 'ENOTFOUND';
+
+    if (isNetworkErr) {
+      return sendErrorResponse(503, isNetworkErr ? 'Service Unavailable' : err.message);
+    }
+    return sendErrorResponse(500, err instanceof Error ? err.message : 'Something went wrong');
   }
 }

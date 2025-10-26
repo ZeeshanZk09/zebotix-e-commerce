@@ -1,17 +1,15 @@
 'use client';
 import Image from 'next/image';
 import { MapPin, Mail, Phone } from 'lucide-react';
-import { Store } from '@/generated/prisma/browser';
-import { StoreCreateInput, StoreModel } from '@/generated/prisma/models';
 
-const StoreInfo = ({ store }: { store: StoreCreateInput }) => {
+const StoreInfo = ({ store }: { store: any }) => {
   return (
     <div className='flex-1 space-y-2 text-sm'>
       <Image
         width={100}
         height={100}
-        src={store.logo}
-        alt={store.name}
+        src={store?.logo || '/assets/zebotix_logo.png'}
+        alt={store?.name || 'zebotix_logo'}
         className='max-w-20 max-h-20 object-contain shadow rounded-full max-sm:mx-auto'
       />
       <div className='flex flex-col sm:flex-row gap-3 items-center'>
@@ -51,13 +49,13 @@ const StoreInfo = ({ store }: { store: StoreCreateInput }) => {
         <Image
           width={36}
           height={36}
-          src={store.user.connect?.image as string}
-          alt={store.user.connect?.name as string}
+          src={store.user?.image as string}
+          alt={store.user?.name as string}
           className='w-9 h-9 rounded-full'
         />
         <div>
-          <p className='text-slate-600 font-medium'>{store.user?.connect?.name as string}</p>
-          <p className='text-slate-400'>{store.user?.connect?.email as string}</p>
+          <p className='text-slate-600 font-medium'>{store.user?.name as string}</p>
+          <p className='text-slate-400'>{store.user?.email as string}</p>
         </div>
       </div>
     </div>

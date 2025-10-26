@@ -162,6 +162,7 @@ async function upsertUserToDb(user: any) {
         image: user.image ?? null,
       },
     });
+
     logInfo('upsertUserToDb', { ok: true, id: result.id });
     return result;
   } catch (err: any) {
@@ -179,7 +180,7 @@ async function upsertUserToDb(user: any) {
 export const syncUserCreation = inngest.createFunction(
   { id: 'sync-user-creation' },
   { event: 'clerk/user.created' },
-  async ({ event, step }) => {
+  async ({ event }) => {
     logInfo(
       'syncUserCreation',
       'event.name=',

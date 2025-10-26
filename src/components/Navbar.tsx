@@ -1,13 +1,15 @@
 'use client';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { PackageIcon, Search, ShoppingCart } from 'lucide-react';
+import { PackageIcon, Search, Shield, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useUser, useClerk, UserButton } from '@clerk/nextjs';
+import { useAdmin } from '@/lib/hooks/useAdmin';
 const Navbar = () => {
   const router = useRouter();
   const { user } = useUser();
+  const { isAdmin } = useAdmin();
   const { openSignIn } = useClerk();
   const [search, setSearch] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -41,20 +43,22 @@ const Navbar = () => {
             <Link href='/'>About</Link>
             <Link href='/'>Contact</Link>
 
-            <form
-              onSubmit={handleSearch}
-              className='hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full'
-            >
-              <Search size={18} className='text-slate-600' />
-              <input
-                className='w-full bg-transparent outline-none placeholder-slate-600'
-                type='text'
-                placeholder='Search products'
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                required
-              />
-            </form>
+            {mounted && (
+              <form
+                onSubmit={handleSearch}
+                className='hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full'
+              >
+                <Search size={18} className='text-slate-600' />
+                <input
+                  className='w-full bg-transparent outline-none placeholder-slate-600'
+                  type='text'
+                  placeholder='Search products'
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  required
+                />
+              </form>
+            )}
 
             <Link href='/cart' className='relative flex items-center gap-2 text-slate-600'>
               <ShoppingCart size={18} />
@@ -68,11 +72,23 @@ const Navbar = () => {
               <UserButton>
                 <UserButton.MenuItems>
                   <UserButton.Action
-                    labelIcon={<PackageIcon size={16} />}
+                    labelIcon={<Shield size={16} />}
                     label='My Orders'
                     onClick={() => router.push('/orders')}
                   />
                 </UserButton.MenuItems>
+                {
+                  // admin
+                  isAdmin && (
+                    <UserButton.MenuItems>
+                      <UserButton.Action
+                        labelIcon={<PackageIcon size={16} />}
+                        label='Admin'
+                        onClick={() => router.push('/admin')}
+                      />
+                    </UserButton.MenuItems>
+                  )
+                }
               </UserButton>
             ) : (
               <button
@@ -96,8 +112,6 @@ const Navbar = () => {
                       onClick={() => router.push('/cart')}
                     />
                   </UserButton.MenuItems>
-                </UserButton>
-                <UserButton>
                   <UserButton.MenuItems>
                     <UserButton.Action
                       labelIcon={<PackageIcon size={16} />}
@@ -105,6 +119,18 @@ const Navbar = () => {
                       onClick={() => router.push('/orders')}
                     />
                   </UserButton.MenuItems>
+                  {
+                    // admin
+                    isAdmin && (
+                      <UserButton.MenuItems>
+                        <UserButton.Action
+                          labelIcon={<Shield size={16} />}
+                          label='Admin'
+                          onClick={() => router.push('/admin')}
+                        />
+                      </UserButton.MenuItems>
+                    )
+                  }
                 </UserButton>
               </>
             ) : (

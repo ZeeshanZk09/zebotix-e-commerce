@@ -1,44 +1,33 @@
 'use client';
-import { storesDummyData } from './../../../../public/assets/assets';
 import StoreInfo from '@/components/admin/StoreInfo';
 import Loading from '@/components/Loading';
-import { Store } from '@/generated/prisma/browser';
-import { StoreCreateInput } from '@/generated/prisma/models';
+import { useAdmin } from '@/lib/hooks/useAdmin';
+import { useAdminStores } from '@/lib/hooks/useStores';
+import { useAuth } from '@clerk/clerk-react';
+import { useUser } from '@clerk/nextjs';
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function AdminApprove() {
-  const [stores, setStores] = useState<Store[] | StoreCreateInput[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchStores = async () => {
-    setStores(storesDummyData as any);
-    setLoading(false);
-  };
-
-  const handleApprove = async ({ storeId, status }: { storeId: string; status: string }) => {
-    // Logic to approve a store
-  };
-
-  useEffect(() => {
-    fetchStores();
-  }, []);
-
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const { loading, storesToApprove, handleApprove } = useAdminStores();
   return !loading ? (
     <div className='text-slate-500 mb-28'>
       <h1 className='text-2xl'>
         Approve <span className='text-slate-800 font-medium'>Stores</span>
       </h1>
 
-      {stores.length ? (
+      {Array.isArray(storesToApprove) && storesToApprove?.length ? (
         <div className='flex flex-col gap-4 mt-4'>
-          {stores.map((store) => (
+          {storesToApprove.map((store) => (
             <div
               key={store.id!}
               className='bg-white border rounded-lg shadow-sm p-6 flex max-md:flex-col gap-4 md:items-end max-w-4xl'
             >
               {/* Store Info */}
-              <StoreInfo store={store as StoreCreateInput} />
+              <StoreInfo store={store} />
 
               {/* Actions */}
               <div className='flex gap-3 pt-2 flex-wrap'>

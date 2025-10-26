@@ -1,16 +1,26 @@
 'use client';
 import { Image, ImageKitProvider, buildSrc } from '@imagekit/next';
+import { StaticImageData } from 'next/image';
 import { useState } from 'react';
 
-export default function ImageKit() {
+export default function ImageKit({
+  className,
+  src,
+  alt,
+}: {
+  className?: string;
+  src: string | StaticImageData;
+  alt: string;
+}) {
   const [showPlaceholder, setShowPlaceholder] = useState(true);
   return (
     <ImageKitProvider
       urlEndpoint='https://ik.imagekit.io/your_imagekit_id' // New prop
     >
       <Image
+        className={className}
         transformation={[{ width: 500, height: 500 }]}
-        src='/profile.png'
+        src={src as string}
         width={500}
         height={500}
         style={
@@ -35,7 +45,7 @@ export default function ImageKit() {
         onLoad={() => {
           setShowPlaceholder(false);
         }}
-        alt='Picture of the author'
+        alt={alt}
         loading='eager'
       />
     </ImageKitProvider>

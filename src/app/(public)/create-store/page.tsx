@@ -9,90 +9,24 @@ import { StoreCreateInput } from '@/generated/prisma/models';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { useSellerStore } from '@/lib/hooks/useSellerStore';
 export default function CreateStore() {
-  const { user } = useUser();
-  const router = useRouter();
-  const { getToken } = useAuth();
-  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
-  const [status, setStatus] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
-  const [previewUrl, setPreviewUrl] = useState('');
-
-  const [storeInfo, setStoreInfo] = useState<StoreCreateInput>({
-    name: '',
-    description: '',
-    username: '',
-    address: '',
-    email: '',
-    contact: '',
-    status: 'pending',
-    isActive: false,
-    updatedAt: new Date(),
-    createdAt: new Date(),
-    logo: '',
-    user: { connect: { id: '' } },
-    Product: { create: [] },
-    Order: { create: [] },
-    id: '',
-  });
-
-  const onChangeHandler = (
-    e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setStoreInfo({ ...storeInfo, [e.target.name]: e.target.value });
-  };
-
-  const fetchSellerStatus = async () => {
-    // Logic to check if the store is already submitted
-
-    setLoading(false);
-  };
-
-  const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Logic to submit the store details
-    if (!user) {
-      toast('Please login to continue');
-    }
-    try {
-      const token = await getToken();
-      const formData = new FormData();
-      formData.append('name', storeInfo.name);
-      formData.append('username', storeInfo.username);
-      formData.append('description', storeInfo.description);
-      formData.append('address', storeInfo.address);
-      formData.append('email', storeInfo.email);
-      formData.append('contact', storeInfo.contact);
-      formData.append('image', storeInfo.logo);
-
-      const { data } = await axios.post('/api/store/create', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      toast.success(data.message);
-    } catch (error: any) {
-      console.log(error);
-      toast.error(error?.response?.data.error || error?.message || 'Something went wrong');
-    }
-  };
-
-  useEffect(() => {
-    if ((storeInfo.logo as any) instanceof File) {
-      const url = URL.createObjectURL(storeInfo.logo as any as Blob);
-      setPreviewUrl(url);
-
-      // revoke previous url when logo changes or component unmounts
-      return () => {
-        URL.revokeObjectURL(url);
-      };
-    } else {
-      setPreviewUrl('');
-    }
-    fetchSellerStatus();
-  }, [storeInfo.logo]);
-
+  const {
+    submitStore,
+    submitState,
+    alreadySubmitted,
+    storeForm,
+    statusLoading,
+    statusError,
+    setStoreForm,
+    status,
+    previewUrl,
+    onFileChange,
+    onChangeHandler,
+    message,
+    user,
+    loading,
+  } = useSellerStore();
   if (!user) {
     return (
       <div className='min-h-screen mx-6 flex items-center justify-center text-slate-400'>
@@ -110,7 +44,26 @@ export default function CreateStore() {
       {!alreadySubmitted ? (
         <div className='mx-6 min-h-[70vh] my-16'>
           <form
-            onSubmit={(e) => toast.promise(onSubmitHandler(e), { loading: 'Submitting data...' })}
+            onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+              e.preventDefault();
+              const form = e.target as HTMLFormElement;
+
+              const payload = {
+                username: (form.elements.namedItem('username') as HTMLInputElement).value,
+                name: (form.elements.namedItem('name') as HTMLInputElement).value,
+                description: (form.elements.namedItem('description') as HTMLTextAreaElement).value,
+                address: (form.elements.namedItem('address') as HTMLInputElement).value,
+                email: (form.elements.namedItem('email') as HTMLInputElement).value,
+                contact: (form.elements.namedItem('contact') as HTMLInputElement).value,
+              };
+
+              // submitStore(payload) returns a Promise — pass it directly
+              toast.promise(submitStore(payload), {
+                loading: 'Submitting data...',
+                success: 'Submitted successfully',
+                error: 'Submit failed',
+              });
+            }}
             className='max-w-7xl mx-auto flex flex-col items-start gap-3 text-slate-500'
           >
             {/* Title */}
@@ -137,7 +90,7 @@ export default function CreateStore() {
                 type='file'
                 accept='image/*'
                 onChange={(e) =>
-                  setStoreInfo({ ...storeInfo, logo: (e.target.files?.[0] as any) || '' })
+                  setStoreForm({ ...storeForm, logo: (e.target.files?.[0] as any) || '' })
                 }
                 hidden
               />
@@ -147,7 +100,7 @@ export default function CreateStore() {
             <input
               name='username'
               onChange={onChangeHandler}
-              value={storeInfo.username}
+              value={storeForm.username}
               type='text'
               placeholder='Enter your store username'
               className='border border-slate-300 outline-slate-400 w-full max-w-lg p-2 rounded'
@@ -157,7 +110,7 @@ export default function CreateStore() {
             <input
               name='name'
               onChange={onChangeHandler}
-              value={storeInfo.name}
+              value={storeForm.name}
               type='text'
               placeholder='Enter your store name'
               className='border border-slate-300 outline-slate-400 w-full max-w-lg p-2 rounded'
@@ -167,7 +120,7 @@ export default function CreateStore() {
             <textarea
               name='description'
               onChange={onChangeHandler}
-              value={storeInfo.description}
+              value={storeForm.description}
               rows={5}
               placeholder='Enter your store description'
               className='border border-slate-300 outline-slate-400 w-full max-w-lg p-2 rounded resize-none'
@@ -177,7 +130,7 @@ export default function CreateStore() {
             <input
               name='email'
               onChange={onChangeHandler}
-              value={storeInfo.email}
+              value={storeForm.email}
               type='email'
               placeholder='Enter your store email'
               className='border border-slate-300 outline-slate-400 w-full max-w-lg p-2 rounded'
@@ -187,7 +140,7 @@ export default function CreateStore() {
             <input
               name='contact'
               onChange={onChangeHandler}
-              value={storeInfo.contact}
+              value={storeForm.contact}
               type='text'
               placeholder='Enter your store contact number'
               className='border border-slate-300 outline-slate-400 w-full max-w-lg p-2 rounded'
@@ -197,7 +150,7 @@ export default function CreateStore() {
             <textarea
               name='address'
               onChange={onChangeHandler}
-              value={storeInfo.address}
+              value={storeForm.address}
               rows={5}
               placeholder='Enter your store address'
               className='border border-slate-300 outline-slate-400 w-full max-w-lg p-2 rounded resize-none'
@@ -209,15 +162,26 @@ export default function CreateStore() {
           </form>
         </div>
       ) : (
-        <div className='min-h-[80vh] flex flex-col items-center justify-center'>
-          <p className='sm:text-2xl lg:text-3xl mx-5 font-semibold text-slate-500 text-center max-w-2xl'>
-            {message}
-          </p>
-          {status === 'approved' && (
-            <p className='mt-5 text-slate-400'>
-              redirecting to dashboard in <span className='font-semibold'>5 seconds</span>
+        <div className='min-h-[80vh] flex flex-col items-center justify-center text-center px-6'>
+          <div className='max-w-xl bg-white/5 border border-slate-200/20 rounded-2xl p-8 shadow-md backdrop-blur-sm'>
+            <p className='text-slate-600 sm:text-2xl lg:text-3xl font-semibold mb-4'>
+              {alreadySubmitted && status}
             </p>
-          )}
+
+            {status === 'approved' ? (
+              <p className='text-emerald-500 text-sm sm:text-base'>
+                🎉 Store approved! Redirecting to dashboard in{' '}
+                <span className='font-semibold text-emerald-600'>5 seconds...</span>
+              </p>
+            ) : status === 'rejected' ? (
+              <p className='text-rose-500 text-sm sm:text-base'>
+                ❌ Store rejected. Redirecting to store dashboard in{' '}
+                <span className='font-semibold text-rose-600'>5 seconds...</span>
+              </p>
+            ) : (
+              <p className='text-slate-500 text-sm sm:text-base animate-pulse'>⏳ {message}</p>
+            )}
+          </div>
         </div>
       )}
     </>

@@ -4,39 +4,26 @@ import StoreInfo from '@/components/admin/StoreInfo';
 import Loading from '@/components/Loading';
 import { Store } from '@/generated/prisma/browser';
 import { StoreCreateInput } from '@/generated/prisma/models';
+import { useAdmin } from '@/lib/hooks/useAdmin';
+import { useAdminStores } from '@/lib/hooks/useStores';
+import { useAuth, useUser } from '@clerk/nextjs';
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function AdminStores() {
-  const [stores, setStores] = useState<Store[] | StoreCreateInput[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { loading, stores, toggleIsActive, isError, refetch, toggleState } = useAdminStores();
+  if (loading) return <Loading />;
 
-  const fetchStores = async () => {
-    const parsedStore = storesDummyData.map((c) => ({
-      ...c,
-      logo: String(c.logo),
-      updatedAt: new Date(c.updatedAt),
-      createdAt: new Date(c.createdAt),
-    }));
-    setStores(parsedStore);
-    setLoading(false);
-  };
-
-  const toggleIsActive = async (storeId: string) => {
-    // Logic to toggle the status of a store
-  };
-
-  useEffect(() => {
-    fetchStores();
-  }, []);
-
-  return !loading ? (
+  return (
     <div className='text-slate-500 mb-28'>
       <h1 className='text-2xl'>
         Live <span className='text-slate-800 font-medium'>Stores</span>
       </h1>
 
-      {stores.length ? (
+      {loading ? (
+        <Loading />
+      ) : Array.isArray(stores) && stores?.length ? (
         <div className='flex flex-col gap-4 mt-4'>
           {stores.map((store) => (
             <div
@@ -44,7 +31,7 @@ export default function AdminStores() {
               className='bg-white border border-slate-200 rounded-lg shadow-sm p-6 flex max-md:flex-col gap-4 md:items-end max-w-4xl'
             >
               {/* Store Info */}
-              <StoreInfo store={store as StoreCreateInput} />
+              <StoreInfo store={store} />
 
               {/* Actions */}
               <div className='flex items-center gap-3 pt-2 flex-wrap'>
@@ -54,7 +41,9 @@ export default function AdminStores() {
                     type='checkbox'
                     className='sr-only peer'
                     onChange={() =>
-                      toast.promise(toggleIsActive(store.id!), { loading: 'Updating data...' })
+                      toast.promise(() => toggleIsActive(store.id!), {
+                        loading: 'Updating data...',
+                      })
                     }
                     checked={store.isActive}
                   />
@@ -71,7 +60,5 @@ export default function AdminStores() {
         </div>
       )}
     </div>
-  ) : (
-    <Loading />
   );
 }
