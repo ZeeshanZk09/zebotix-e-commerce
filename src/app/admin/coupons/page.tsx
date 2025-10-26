@@ -1,55 +1,40 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { DeleteIcon } from 'lucide-react';
-import { couponDummyData } from './../../../../public/assets/assets';
-import { Coupon } from '@/generated/prisma/browser';
+import { useAdminCoupons } from '@/lib/hooks/useAdminCoupon';
+import Loading from '@/components/Loading';
 
 export default function AdminCoupons() {
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-
-  const [newCoupon, setNewCoupon] = useState({
-    code: '',
-    description: '',
-    discount: '',
-    forNewUser: false,
-    forMember: false,
-    isPublic: false,
-    expiresAt: new Date(),
-  });
-
-  const fetchCoupons = async () => {
-    const parsedCoupons = couponDummyData.map((c) => ({
-      ...c,
-      expiresAt: new Date(c.expiresAt),
-      createdAt: new Date(c.createdAt),
-    }));
-    setCoupons(parsedCoupons as unknown as Coupon[]);
-  };
-
-  const handleAddCoupon = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Logic to add a coupon
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewCoupon({ ...newCoupon, [e.target.name]: e.target.value });
-  };
-
-  const deleteCoupon = async (code: string) => {
-    // Logic to delete a coupon
-  };
-
-  useEffect(() => {
-    fetchCoupons();
-  }, []);
-
+  const {
+    setNewCoupon,
+    setField,
+    resetForm,
+    newCoupon,
+    handleDeleteCoupon,
+    handleChange,
+    handleAddCoupon,
+    fetchCoupons,
+    deleteState,
+    loading,
+    couponsError,
+    coupons,
+    addState,
+  } = useAdminCoupons();
+  if (loading) return <Loading />;
   return (
     <div className='text-slate-500 mb-40'>
       {/* Add Coupon */}
       <form
-        onSubmit={(e) => toast.promise(handleAddCoupon(e), { loading: 'Adding coupon...' })}
+        onSubmit={(e) =>
+          toast.promise(
+            () => {
+              e.preventDefault();
+              return handleAddCoupon(e);
+            },
+            { loading: 'Adding coupon...' }
+          )
+        }
         className='max-w-sm text-sm'
       >
         <h2 className='text-2xl'>
@@ -94,7 +79,7 @@ export default function AdminCoupons() {
             placeholder='Coupon Expires At'
             className='w-full mt-1 p-2 border border-slate-200 outline-slate-400 rounded-md'
             name='expiresAt'
-            value={format(newCoupon.expiresAt, 'yyyy-MM-dd')}
+            value={format(newCoupon?.expiresAt!, 'yyyy-MM-dd')}
             onChange={handleChange}
           />
         </label>
@@ -159,14 +144,16 @@ export default function AdminCoupons() {
                   <td className='py-3 px-4 text-slate-800'>{coupon.description}</td>
                   <td className='py-3 px-4 text-slate-800'>{coupon.discount}%</td>
                   <td className='py-3 px-4 text-slate-800'>
-                    {format(coupon.expiresAt, 'yyyy-MM-dd')}
+                    {format(coupon?.expiresAt!, 'yyyy-MM-dd')}
                   </td>
                   <td className='py-3 px-4 text-slate-800'>{coupon.forNewUser ? 'Yes' : 'No'}</td>
                   <td className='py-3 px-4 text-slate-800'>{coupon.forMember ? 'Yes' : 'No'}</td>
                   <td className='py-3 px-4 text-slate-800'>
                     <DeleteIcon
                       onClick={() =>
-                        toast.promise(deleteCoupon(coupon.code), { loading: 'Deleting coupon...' })
+                        toast.promise(handleDeleteCoupon(coupon.code), {
+                          loading: 'Deleting coupon...',
+                        })
                       }
                       className='w-5 h-5 text-red-500 hover:text-red-800 cursor-pointer'
                     />

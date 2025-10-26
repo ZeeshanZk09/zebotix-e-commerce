@@ -1,10 +1,10 @@
 import { useAuth } from '@clerk/clerk-react';
 import { useUser } from '@clerk/nextjs';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-
+import axios from '@/lib/axios';
 type IsAdminResponse = {
   data: {
     isAdmin: boolean;

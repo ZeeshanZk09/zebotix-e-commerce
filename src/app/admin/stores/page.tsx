@@ -1,14 +1,7 @@
 'use client';
-import { storesDummyData } from './../../../../public/assets/assets';
 import StoreInfo from '@/components/admin/StoreInfo';
 import Loading from '@/components/Loading';
-import { Store } from '@/generated/prisma/browser';
-import { StoreCreateInput } from '@/generated/prisma/models';
-import { useAdmin } from '@/lib/hooks/useAdmin';
 import { useAdminStores } from '@/lib/hooks/useStores';
-import { useAuth, useUser } from '@clerk/nextjs';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function AdminStores() {

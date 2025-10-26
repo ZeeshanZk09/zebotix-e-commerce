@@ -2,7 +2,8 @@
 'use client';
 import { useAuth } from '@clerk/clerk-react';
 import { useUser } from '@clerk/nextjs';
-import axios from 'axios';
+import axios from '@/lib/axios';
+
 import { useEffect, useState, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';

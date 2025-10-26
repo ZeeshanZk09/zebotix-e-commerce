@@ -1,17 +1,10 @@
 'use client';
 import StoreInfo from '@/components/admin/StoreInfo';
 import Loading from '@/components/Loading';
-import { useAdmin } from '@/lib/hooks/useAdmin';
 import { useAdminStores } from '@/lib/hooks/useStores';
-import { useAuth } from '@clerk/clerk-react';
-import { useUser } from '@clerk/nextjs';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function AdminApprove() {
-  const { user } = useUser();
-  const { getToken } = useAuth();
   const { loading, storesToApprove, handleApprove } = useAdminStores();
   return !loading ? (
     <div className='text-slate-500 mb-28'>

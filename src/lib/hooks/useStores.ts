@@ -1,7 +1,8 @@
 // hooks/useAdminStores.ts
 import { useAuth } from '@clerk/clerk-react';
 import { useUser } from '@clerk/nextjs';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axios from '@/lib/axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 

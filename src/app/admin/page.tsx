@@ -3,6 +3,7 @@ import { dummyAdminDashboardData } from './../../../public/assets/assets';
 import Loading from '@/components/Loading';
 import OrdersAreaChart from '@/components/OrdersAreaChart';
 import { useAdmin } from '@/lib/hooks/useAdmin';
+import { useAdminDashboard } from '@/lib/hooks/useAdminDashboard';
 import { useAuth } from '@clerk/nextjs';
 import axios from 'axios';
 import { CircleDollarSignIcon, ShoppingBasketIcon, StoreIcon, TagsIcon } from 'lucide-react';
@@ -10,52 +11,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function AdminDashboard() {
-  const { getToken } = useAuth();
-  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
-  const { isAdmin, loading } = useAdmin();
-  console.log(isAdmin);
-  const [dashboardData, setDashboardData] = useState<{
-    products: number;
-    revenue: string;
-    orders: number;
-    stores: number;
-    allOrders: any[];
-  }>({
-    products: 0,
-    revenue: '',
-    orders: 0,
-    stores: 0,
-    allOrders: [],
-  });
-
-  const fetchDashboardData = async () => {
-    try {
-      const token = await getToken();
-      const { data } = await axios.get('/api/admin/dashboard', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log('response data from dashboard', data);
-      setDashboardData(data.data);
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error?.response?.data.error || error?.message || 'Something went wrong');
-    }
-  };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-  console.log(typeof dashboardData, {
-    ...dashboardData,
-  });
-  const dashboardCardsData = [
-    { title: 'Total Products', value: dashboardData.products, icon: ShoppingBasketIcon },
-    { title: 'Total Revenue', value: currency + dashboardData.revenue, icon: CircleDollarSignIcon },
-    { title: 'Total Orders', value: dashboardData.orders, icon: TagsIcon },
-    { title: 'Total Stores', value: dashboardData.stores, icon: StoreIcon },
-  ];
+  const { refetch, loading, isError, dashboard, cards, allOrders } = useAdminDashboard();
   if (loading) return <Loading />;
 
   return (
@@ -66,7 +22,7 @@ export default function AdminDashboard() {
 
       {/* Cards */}
       <div className='flex flex-wrap gap-5 my-10 mt-4'>
-        {dashboardCardsData.map((card, index) => (
+        {cards.map((card, index) => (
           <div
             key={index}
             className='flex items-center gap-10 border border-slate-200 p-3 px-6 rounded-lg'
@@ -84,7 +40,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Area Chart */}
-      <OrdersAreaChart allOrders={dashboardData.allOrders} />
+      <OrdersAreaChart allOrders={allOrders} />
     </div>
   );
 }
