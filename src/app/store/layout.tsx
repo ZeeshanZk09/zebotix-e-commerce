@@ -1,4 +1,5 @@
 import StoreLayout from '@/components/store/StoreLayout';
+import { SignedIn, SignedOut, SignIn } from '@clerk/nextjs';
 
 export const metadata = {
   title: 'GoCart. - Store Dashboard',
@@ -8,7 +9,16 @@ export const metadata = {
 export default function RootAdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <StoreLayout>{children}</StoreLayout>
+      <SignedIn>
+        <StoreLayout>
+          <>{children}</>
+        </StoreLayout>
+      </SignedIn>
+      <SignedOut>
+        <div className='min-h-screen flex justify-center items-center'>
+          <SignIn routing='hash' fallbackRedirectUrl={'/store'} />
+        </div>
+      </SignedOut>
     </>
   );
 }

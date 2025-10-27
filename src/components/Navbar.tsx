@@ -6,20 +6,22 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useUser, useClerk, UserButton } from '@clerk/nextjs';
 import { useAdmin } from '@/lib/hooks/useAdmin';
+import useHeader from '@/lib/hooks/useHeader';
 const Navbar = () => {
-  const router = useRouter();
-  const { user } = useUser();
-  const { isAdmin } = useAdmin();
-  const { openSignIn } = useClerk();
-  const [search, setSearch] = useState('');
+  const {
+    search,
+    user,
+    router,
+    isAdmin,
+    openSignIn,
+    setSearch,
+    handleSearch,
+    cartCount,
+    handleAuthAction,
+    isSeller,
+  } = useHeader();
+
   const [mounted, setMounted] = useState(false);
-  const cartCount = useAppSelector((state) => state.cart.total);
-
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    router.push(`/shop?search=${search}`);
-  };
-
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -43,22 +45,20 @@ const Navbar = () => {
             <Link href='/'>About</Link>
             <Link href='/'>Contact</Link>
 
-            {mounted && (
-              <form
-                onSubmit={handleSearch}
-                className='hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full'
-              >
-                <Search size={18} className='text-slate-600' />
-                <input
-                  className='w-full bg-transparent outline-none placeholder-slate-600'
-                  type='text'
-                  placeholder='Search products'
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  required
-                />
-              </form>
-            )}
+            <form
+              onSubmit={handleSearch}
+              className='hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full'
+            >
+              <Search size={18} className='text-slate-600' />
+              <input
+                className='w-full bg-transparent outline-none placeholder-slate-600'
+                type='text'
+                placeholder='Search products'
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                required
+              />
+            </form>
 
             <Link href='/cart' className='relative flex items-center gap-2 text-slate-600'>
               <ShoppingCart size={18} />
@@ -89,6 +89,15 @@ const Navbar = () => {
                     </UserButton.MenuItems>
                   )
                 }
+                {isSeller && (
+                  <UserButton.MenuItems>
+                    <UserButton.Action
+                      labelIcon={<Shield size={16} />}
+                      label='Seller Dashboard'
+                      onClick={() => router.push('/store')}
+                    />
+                  </UserButton.MenuItems>
+                )}
               </UserButton>
             ) : (
               <button
@@ -125,12 +134,21 @@ const Navbar = () => {
                       <UserButton.MenuItems>
                         <UserButton.Action
                           labelIcon={<Shield size={16} />}
-                          label='Admin'
+                          label='Admin Dashboard'
                           onClick={() => router.push('/admin')}
                         />
                       </UserButton.MenuItems>
                     )
                   }
+                  {isSeller && (
+                    <UserButton.MenuItems>
+                      <UserButton.Action
+                        labelIcon={<Shield size={16} />}
+                        label='Seller Dashboard'
+                        onClick={() => router.push('/store')}
+                      />
+                    </UserButton.MenuItems>
+                  )}
                 </UserButton>
               </>
             ) : (

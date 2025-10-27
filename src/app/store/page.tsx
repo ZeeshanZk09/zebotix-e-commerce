@@ -83,7 +83,7 @@ export default function Dashboard() {
             <div>
               <div className='flex gap-3'>
                 <Image
-                  src={(review.user.connect?.image! as string) || ''}
+                  src={(review.user?.image! as string) || ''}
                   alt=''
                   className='w-10 aspect-square rounded-full'
                   width={100}

@@ -4,9 +4,13 @@ import { HomeIcon, LayoutListIcon, SquarePenIcon, SquarePlusIcon } from 'lucide-
 import Image from 'next/image';
 import Link from 'next/link';
 import { Store } from '@/generated/prisma/browser';
+import ImageKit from '../imagekit/Image';
+import { useUser } from '@clerk/nextjs';
+import { assets } from '../../../public/assets/assets';
 
 const StoreSidebar = ({ storeInfo }: { storeInfo: Store }) => {
   const pathname = usePathname();
+  const { user } = useUser();
 
   const sidebarLinks = [
     { name: 'Dashboard', href: '/store', icon: HomeIcon },
@@ -18,14 +22,12 @@ const StoreSidebar = ({ storeInfo }: { storeInfo: Store }) => {
   return (
     <div className='inline-flex h-full flex-col gap-5 border-r border-slate-200 sm:min-w-60'>
       <div className='flex flex-col gap-3 justify-center items-center pt-8 max-sm:hidden'>
-        <Image
-          className='w-14 h-14 rounded-full shadow-md'
-          src={storeInfo?.logo}
-          alt=''
-          width={80}
-          height={80}
+        <ImageKit
+          className='w-14 h-14 rounded-full'
+          src={user?.imageUrl || assets.gs_logo}
+          alt={`${user?.firstName}_logo` || 'Admin_logo'}
         />
-        <p className='text-slate-700'>{storeInfo?.name}</p>
+        <p className='text-slate-700'>{storeInfo?.name || 'Store'}</p>
       </div>
 
       <div className='max-sm:mt-6'>
