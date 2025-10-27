@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import axios from '@/lib/axios';
+import { useEffect, useRef } from 'react';
 type IsAdminResponse = {
   data: {
     isAdmin: boolean;
@@ -46,6 +47,29 @@ export function useAdmin() {
       return false; // don't throw the error
     },
   });
+
+  // Prevent multiple toasts on re-renders: use a ref to show only once
+  const shownSuccessToast = useRef(false);
+  const shownErrorToast = useRef(false);
+
+  // Show success toast when loading finishes and we have data
+  useEffect(() => {
+    if (!query.isLoading && !query.isFetching && !shownSuccessToast.current) {
+      console.log(user);
+      shownSuccessToast.current = true;
+    }
+    if (query.data) {
+      setTimeout(() => toast.success(`Welcome back ${user?.fullName ?? 'Admin'}!`), 3000);
+    }
+  }, [query.isLoading, query.isFetching, query.data]);
+
+  // Show error toast once if there's an error
+  useEffect(() => {
+    if (query.isError && !shownErrorToast.current) {
+      toast.error('Failed to validate admin status.'); // you can include error details if desired
+      shownErrorToast.current = true;
+    }
+  }, [query.isError]);
 
   return {
     isAdmin: query.data ?? false,

@@ -5,6 +5,7 @@ import { AxiosError } from 'axios';
 import axios from '@/lib/axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useEffect, useRef } from 'react';
 
 export function useAdminStores() {
   const { user } = useUser();
@@ -165,6 +166,50 @@ export function useAdminStores() {
   const handleApprove = ({ storeId, status }: { storeId: string; status: string }) => {
     return approveMutation.mutateAsync({ storeId, status });
   };
+
+  // Prevent multiple toasts on re-renders: use a ref to show only once
+  // stores
+  const shownSuccessToastForStores = useRef(false);
+  const shownErrorToastForStores = useRef(false);
+
+  // Show success toast when loading finishes and we have data
+  useEffect(() => {
+    if (!storesQuery.isLoading && !storesQuery.isFetching && !shownSuccessToastForStores.current) {
+      toast.success('Approved stores fetched successfully.');
+      shownSuccessToastForStores.current = true;
+    }
+  }, [storesQuery.isLoading, storesQuery.isFetching]);
+
+  // Show error toast once if there's an error
+  useEffect(() => {
+    if (storesQuery.isError && !shownErrorToastForStores.current) {
+      toast.error('Failed to fetch stores.'); // you can include error details if desired
+      shownErrorToastForStores.current = true;
+    }
+  }, [storesQuery.isError]);
+  // approve store
+  const shownSuccessToastForApproveStore = useRef(false);
+  const shownErrorToastForApproveStore = useRef(false);
+
+  // Show success toast when loading finishes and we have data
+  useEffect(() => {
+    if (
+      !storesToApproveQuery.isLoading &&
+      !storesToApproveQuery.isFetching &&
+      !shownSuccessToastForApproveStore.current
+    ) {
+      toast.success('Stores fetched successfully.');
+      shownSuccessToastForApproveStore.current = true;
+    }
+  }, [storesToApproveQuery.isLoading, storesToApproveQuery.isFetching]);
+
+  // Show error toast once if there's an error
+  useEffect(() => {
+    if (storesToApproveQuery.isError && !shownErrorToastForApproveStore.current) {
+      toast.error('Failed to fetch dashboard.'); // you can include error details if desired
+      shownErrorToastForApproveStore.current = true;
+    }
+  }, [storesToApproveQuery.isError]);
 
   return {
     stores: storesQuery.data ?? [],

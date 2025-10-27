@@ -5,7 +5,7 @@ import { getAuth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
 
 // get dashboard data for seller (total orders, total earnings, total products)
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const { userId } = getAuth(request);
     if (!userId) sendErrorResponse(401, 'Unauthorized');

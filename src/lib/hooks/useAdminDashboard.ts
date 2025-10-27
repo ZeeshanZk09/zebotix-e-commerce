@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { CircleDollarSignIcon, ShoppingBasketIcon, StoreIcon, TagsIcon } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 export type DashboardData = {
   products: number;
@@ -63,6 +64,26 @@ export function useAdminDashboard(enabled = true) {
     { title: 'Total Orders', value: data.orders, icon: TagsIcon },
     { title: 'Total Stores', value: data.stores, icon: StoreIcon },
   ];
+
+  // Prevent multiple toasts on re-renders: use a ref to show only once
+  const shownSuccessToast = useRef(false);
+  const shownErrorToast = useRef(false);
+
+  // Show success toast when loading finishes and we have data
+  useEffect(() => {
+    if (!query.isLoading && !query.isFetching && !shownSuccessToast.current) {
+      toast.success('Dashboard fetched successfully.');
+      shownSuccessToast.current = true;
+    }
+  }, [query.isLoading, query.isFetching]);
+
+  // Show error toast once if there's an error
+  useEffect(() => {
+    if (query.isError && !shownErrorToast.current) {
+      toast.error('Failed to fetch dashboard.'); // you can include error details if desired
+      shownErrorToast.current = true;
+    }
+  }, [query.isError]);
 
   return {
     dashboard: data,

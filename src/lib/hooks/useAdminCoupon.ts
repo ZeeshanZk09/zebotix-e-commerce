@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { useUser } from '@clerk/nextjs';
 import axios from '@/lib/axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import type { AxiosError } from 'axios';
 
@@ -209,6 +209,26 @@ export function useAdminCoupons() {
   const setField = useCallback((field: keyof Coupon, value: any) => {
     setNewCoupon((prev) => ({ ...prev, [field]: value }));
   }, []);
+
+  // Prevent multiple toasts on re-renders: use a ref to show only once
+  const shownSuccessToast = useRef(false);
+  const shownErrorToast = useRef(false);
+
+  // Show success toast when loading finishes and we have data
+  useEffect(() => {
+    if (!couponsQuery.isLoading && !couponsQuery.isFetching && !shownSuccessToast.current) {
+      toast.success(`Coupons fetched.`);
+      shownSuccessToast.current = true;
+    }
+  }, [couponsQuery.isLoading, couponsQuery.isFetching]);
+
+  // Show error toast once if there's an error
+  useEffect(() => {
+    if (couponsQuery.isError && !shownErrorToast.current) {
+      toast.error('Failed to fetch coupons.'); // you can include error details if desired
+      shownErrorToast.current = true;
+    }
+  }, [couponsQuery.isError]);
 
   return {
     coupons: couponsQuery.data ?? [],

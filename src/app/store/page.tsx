@@ -3,51 +3,28 @@ import { dummyStoreDashboardData } from './../../../public/assets/assets';
 import Loading from '@/components/Loading';
 import { Rating } from '@/generated/prisma/browser';
 import { RatingCreateInput } from '@/generated/prisma/models';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { CircleDollarSignIcon, ShoppingBasketIcon, StarIcon, TagsIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-
+import { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import useStoreDashboard from '@/lib/hooks/useStoreDashboard';
 export default function Dashboard() {
   const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
 
   const router = useRouter();
-
-  const [loading, setLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState<{
-    totalProducts: number;
-    totalEarnings: number;
-    totalOrders: number;
-    ratings: RatingCreateInput[];
-  }>({
-    totalProducts: 0,
-    totalEarnings: 0,
-    totalOrders: 0,
-    ratings: [],
-  });
-
-  const dashboardCardsData = [
-    { title: 'Total Products', value: dashboardData.totalProducts, icon: ShoppingBasketIcon },
-    {
-      title: 'Total Earnings',
-      value: currency + dashboardData.totalEarnings,
-      icon: CircleDollarSignIcon,
-    },
-    { title: 'Total Orders', value: dashboardData.totalOrders, icon: TagsIcon },
-    { title: 'Total Ratings', value: dashboardData.ratings.length, icon: StarIcon },
-  ];
-
-  const fetchDashboardData = async () => {
-    // setDashboardData(dummyStoreDashboardData);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const {
+    data: dashboardData,
+    isLoading: loading,
+    isFetching,
+    isError,
+    refetch,
+    cards: dashboardCardsData,
+  } = useStoreDashboard({ currency: '₨' });
 
   if (loading) return <Loading />;
-
   return (
     <div className=' text-slate-500 mb-28'>
       <h1 className='text-2xl'>

@@ -5,26 +5,64 @@ import Image from 'next/image';
 import Loading from '@/components/Loading';
 import { productDummyData } from './../../../../public/assets/assets';
 import { Product } from '@/generated/prisma/browser';
-
+import { useAuth } from '@clerk/nextjs';
+import axios from 'axios';
+import ImageKit from '@/components/imagekit/Image';
 export default function StoreManageProducts() {
-  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
-
+  const currency = 'Rs';
+  const { getToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
 
   const fetchProducts = async () => {
-    const parsedProduct = productDummyData.map((c) => ({
-      ...c,
-      images: c.images.map((image) => String(image)),
-      updatedAt: new Date(c.updatedAt),
-      createdAt: new Date(c.createdAt),
-    }));
-    setProducts(parsedProduct);
-    setLoading(false);
+    try {
+      const token = await getToken();
+      const response = await axios.get('/api/store/products', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        setProducts(response.data.data);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setLoading(false);
+    }
   };
 
   const toggleStock = async (productId: string) => {
-    // Logic to toggle the stock of a product
+    try {
+      const token = await getToken();
+      const response = await axios.post(
+        `/api/store/stock-toggle`,
+        { productId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        setProducts((prevProducts) =>
+          prevProducts.map((product) => {
+            if (product.id === productId) {
+              return {
+                ...product,
+                inStock: !product.inStock,
+              };
+            }
+            return product;
+          })
+        );
+        toast.success(response.data.message);
+        fetchProducts();
+      }
+    } catch (error) {
+      toast.error('Error updating stock');
+      console.error('Error updating stock:', error);
+    }
   };
 
   useEffect(() => {
@@ -53,10 +91,8 @@ export default function StoreManageProducts() {
             <tr key={product.id} className='border-t border-gray-200 hover:bg-gray-50'>
               <td className='px-4 py-3'>
                 <div className='flex gap-2 items-center'>
-                  <Image
-                    width={40}
-                    height={40}
-                    className='p-1 shadow rounded cursor-pointer'
+                  <ImageKit
+                    className='w-14 h-14 p-1 shadow rounded cursor-pointer'
                     src={product.images[0]}
                     alt=''
                   />

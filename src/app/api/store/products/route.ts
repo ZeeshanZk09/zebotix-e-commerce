@@ -80,6 +80,10 @@ export async function GET(request: NextRequest) {
       where: {
         storeId: storeId as string,
       },
+      orderBy: {
+        // latest products
+        createdAt: 'desc',
+      },
     });
     return sendSuccessResponse(200, 'Products found', products);
   } catch (err: any) {

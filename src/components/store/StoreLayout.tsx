@@ -1,45 +1,44 @@
 'use client';
-import { useEffect, useState } from 'react';
 import Loading from '../Loading';
 import Link from 'next/link';
 import { ArrowRightIcon } from 'lucide-react';
 import SellerNavbar from './StoreNavbar';
 import SellerSidebar from './StoreSidebar';
-import { dummyStoreData } from './../../../public/assets/assets';
-import { Store } from '@/generated/prisma/browser';
-import { useAuth, useUser } from '@clerk/nextjs';
-import axios from 'axios';
 import useHeader from '@/lib/hooks/useHeader';
 
 const StoreLayout = ({ children }: { children: React.ReactNode }) => {
-  const { loading, isSeller, storeInfo } = useHeader();
-  console.log(storeInfo);
-  if (loading) <Loading />;
+  const { loading, isSeller, storeInfo, user } = useHeader();
 
-  if (!isSeller)
+  // Show loader while user or seller/store info is being fetched
+  if (loading || !user) {
+    return <Loading />;
+  }
+
+  // If we've finished loading and the user is a seller, show store UI
+  if (isSeller) {
     return (
-      <>
-        <div className='min-h-screen flex flex-col items-center justify-center text-center px-6'>
-          <h1 className='text-2xl sm:text-4xl font-semibold text-slate-400'>
-            You are not authorized to access this page
-          </h1>
-          <Link
-            href='/'
-            className='bg-slate-700 text-white flex items-center gap-2 mt-8 p-2 px-6 max-sm:text-sm rounded-full'
-          >
-            Go to home <ArrowRightIcon size={18} />
-          </Link>
+      <div className='flex flex-col h-screen'>
+        <SellerNavbar />
+        <div className='flex flex-1 items-start h-full overflow-y-scroll no-scrollbar'>
+          {storeInfo && <SellerSidebar storeInfo={storeInfo} />}
+          <div className='flex-1 h-full p-5 lg:pl-12 lg:pt-12 overflow-y-scroll'>{children}</div>
         </div>
-      </>
-    );
-
-  return (
-    <div className='flex flex-col h-screen'>
-      <SellerNavbar />
-      <div className='flex flex-1 items-start h-full overflow-y-scroll no-scrollbar'>
-        <SellerSidebar storeInfo={storeInfo} />
-        <div className='flex-1 h-full p-5 lg:pl-12 lg:pt-12 overflow-y-scroll'>{children}</div>
       </div>
+    );
+  }
+
+  // If finished loading and not a seller, show unauthorized UI
+  return (
+    <div className='min-h-screen flex flex-col items-center justify-center text-center px-6'>
+      <h1 className='text-2xl sm:text-4xl font-semibold text-slate-400'>
+        You are not authorized to access this page
+      </h1>
+      <Link
+        href='/'
+        className='bg-slate-700 text-white flex items-center gap-2 mt-8 p-2 px-6 max-sm:text-sm rounded-full'
+      >
+        Go to home <ArrowRightIcon size={18} />
+      </Link>
     </div>
   );
 };

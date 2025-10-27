@@ -1,8 +1,10 @@
 'use client';
+import axios from 'axios';
 import { assets } from './../../../../public/assets/assets';
 import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '@clerk/nextjs';
 
 export default function StoreAddProduct() {
   const categories = [
@@ -29,7 +31,7 @@ export default function StoreAddProduct() {
     category: '',
   });
   const [loading, setLoading] = useState(false);
-
+  const { getToken } = useAuth();
   const onChangeHandler = (
     e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
   ) => {
@@ -38,7 +40,47 @@ export default function StoreAddProduct() {
 
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Logic to add a product
+    try {
+      if (!images[1] && !images[2] && !images[3] && !images[4]) {
+        toast.error('Please upload at least one image.');
+        return;
+      }
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('name', productInfo.name);
+      formData.append('description', productInfo.description);
+      formData.append('mrp', productInfo.mrp.toString());
+      formData.append('price', productInfo.price.toString());
+      formData.append('category', productInfo.category);
+      Object.keys(images).forEach((key) => {
+        if (images[Number(key)]) {
+          images[Number(key)] && formData.append('images', images[Number(key)] as File);
+        }
+      });
+      const token = await getToken();
+      const response = await axios.post('/api/store/product', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        toast.success('Product added successfully');
+        setProductInfo({
+          name: '',
+          description: '',
+          mrp: 0,
+          price: 0,
+          category: '',
+        });
+        setImages({ 1: null, 2: null, 3: null, 4: null });
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast.error('Error adding product');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -109,7 +151,7 @@ export default function StoreAddProduct() {
 
       <div className='flex gap-5'>
         <label htmlFor='' className='flex flex-col gap-2 '>
-          Actual Price ($)
+          Actual Price (Rs)
           <input
             type='number'
             name='mrp'
@@ -121,7 +163,7 @@ export default function StoreAddProduct() {
           />
         </label>
         <label htmlFor='' className='flex flex-col gap-2 '>
-          Offer Price ($)
+          Offer Price (Rs)
           <input
             type='number'
             name='price'

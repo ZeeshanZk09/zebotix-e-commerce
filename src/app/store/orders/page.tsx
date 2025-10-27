@@ -1,27 +1,74 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Loading from '@/components/Loading';
-import { orderDummyData } from './../../../../public/assets/assets';
-import { Order, OrderStatus } from '@/generated/prisma/browser';
-import { OrderCreateInput } from '@/generated/prisma/models';
+import { useAuth } from '@clerk/nextjs';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export default function StoreOrders() {
-  const [orders, setOrders] = useState<OrderCreateInput[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<OrderCreateInput | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const { getToken } = useAuth();
+
   const fetchOrders = async () => {
-    setOrders([]);
-    setLoading(false);
+    try {
+      const token = await getToken();
+      const { data } = await axios.get('/api/store/orders', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('orders data:', data);
+      setOrders(data.data);
+      toast.success('Orders fetched successfully');
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast.error('Error fetching orders');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
-    // Logic to update the status of an order
+  const updateOrderStatus = async (orderId: any, status: any) => {
+    try {
+      const token = await getToken();
+      await axios.post(
+        '/api/store/orders',
+        {
+          orderId,
+          status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => {
+          if (order.id === orderId) {
+            return {
+              ...order,
+              status,
+            };
+          }
+          return order;
+        })
+      );
+      toast.success('Orders fetched successfully');
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast.error('Error fetching orders');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const openModal = (order: Order | OrderCreateInput) => {
-    setSelectedOrder(order as OrderCreateInput);
+  const openModal = (order: any) => {
+    setSelectedOrder(order);
     setIsModalOpen(true);
   };
 
@@ -58,47 +105,48 @@ export default function StoreOrders() {
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-100'>
-              {orders.map((order, index) => (
-                <tr
-                  key={order.id}
-                  className='hover:bg-gray-50 transition-colors duration-150 cursor-pointer'
-                  onClick={() => openModal(order)}
-                >
-                  <td className='pl-6 text-green-600'>{index + 1}</td>
-                  <td className='px-4 py-3'>{order.user?.connect?.name! as string}</td>
-                  <td className='px-4 py-3 font-medium text-slate-800'>${order.total}</td>
-                  <td className='px-4 py-3'>{order.paymentMethod}</td>
-                  <td className='px-4 py-3'>
-                    {order.isCouponUsed ? (
-                      <span className='bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full'>
-                        {(order.coupon as any)?.code}
-                      </span>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                  <td
-                    className='px-4 py-3'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
+              {Array.isArray(orders) &&
+                orders?.map((order, index) => (
+                  <tr
+                    key={order.id}
+                    className='hover:bg-gray-50 transition-colors duration-150 cursor-pointer'
+                    onClick={() => openModal(order)}
                   >
-                    <select
-                      value={order.status}
-                      onChange={(e) => updateOrderStatus(order?.id!, e.target.value as OrderStatus)}
-                      className='border-gray-300 rounded-md text-sm focus:ring focus:ring-blue-200'
+                    <td className='pl-6 text-green-600'>{index + 1}</td>
+                    <td className='px-4 py-3'>{order.user?.connect?.name! as string}</td>
+                    <td className='px-4 py-3 font-medium text-slate-800'>${order.total}</td>
+                    <td className='px-4 py-3'>{order.paymentMethod}</td>
+                    <td className='px-4 py-3'>
+                      {order.isCouponUsed ? (
+                        <span className='bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full'>
+                          {(order.coupon as any)?.code}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td
+                      className='px-4 py-3'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
                     >
-                      <option value='ORDER_PLACED'>ORDER_PLACED</option>
-                      <option value='PROCESSING'>PROCESSING</option>
-                      <option value='SHIPPED'>SHIPPED</option>
-                      <option value='DELIVERED'>DELIVERED</option>
-                    </select>
-                  </td>
-                  <td className='px-4 py-3 text-gray-500'>
-                    {new Date(order.createdAt as Date).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
+                      <select
+                        value={order.status}
+                        onChange={(e) => updateOrderStatus(order?.id!, e.target.value)}
+                        className='border-gray-300 rounded-md text-sm focus:ring focus:ring-blue-200'
+                      >
+                        <option value='ORDER_PLACED'>ORDER_PLACED</option>
+                        <option value='PROCESSING'>PROCESSING</option>
+                        <option value='SHIPPED'>SHIPPED</option>
+                        <option value='DELIVERED'>DELIVERED</option>
+                      </select>
+                    </td>
+                    <td className='px-4 py-3 text-gray-500'>
+                      {new Date(order.createdAt as Date).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -146,7 +194,7 @@ export default function StoreOrders() {
               <h3 className='font-semibold mb-2'>Products</h3>
               <div className='space-y-2'>
                 {Array.isArray(selectedOrder.orderItems) &&
-                  selectedOrder.orderItems.map((item, i) => (
+                  selectedOrder.orderItems.map((item: any, i: any) => (
                     <div
                       key={i}
                       className='flex items-center gap-4 border border-slate-100 shadow rounded p-2'

@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from '@/lib/axios';
 import { useAdmin } from './useAdmin';
 import { useAppSelector } from '../redux/hooks';
+import toast from 'react-hot-toast';
 
 type SearchResult = {
   id: string;
@@ -172,6 +173,26 @@ export function useHeader(opts?: { prefetchMs?: number }) {
       }
     };
   }, []);
+
+  // Prevent multiple toasts on re-renders: use a ref to show only once
+  const shownSuccessToast = useRef(false);
+  const shownErrorToast = useRef(false);
+
+  // Show success toast when loading finishes and we have data
+  useEffect(() => {
+    if (!storeQuery.isLoading && !storeQuery.isFetching && !shownSuccessToast.current) {
+      toast.success('Store fetched successfully.');
+      shownSuccessToast.current = true;
+    }
+  }, [storeQuery.isLoading, storeQuery.isFetching]);
+
+  // Show error toast once if there's an error
+  useEffect(() => {
+    if (storeQuery.isError && !shownErrorToast.current) {
+      toast.error('Failed to fetch store.'); // you can include error details if desired
+      shownErrorToast.current = true;
+    }
+  }, [storeQuery.isError]);
 
   return {
     // state

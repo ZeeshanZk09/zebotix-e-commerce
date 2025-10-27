@@ -4,7 +4,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { useUser } from '@clerk/nextjs';
 import axios from '@/lib/axios';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
@@ -166,6 +166,26 @@ export function useSellerStore() {
     };
     // only watch the file object reference
   }, [storeForm.logo]);
+
+  // Prevent multiple toasts on re-renders: use a ref to show only once
+  const shownSuccessToast = useRef(false);
+  const shownErrorToast = useRef(false);
+
+  // Show success toast when loading finishes and we have data
+  useEffect(() => {
+    if (!statusQuery.isLoading && !statusQuery.isFetching && !shownSuccessToast.current) {
+      toast.success('Store approved.');
+      shownSuccessToast.current = true;
+    }
+  }, [statusQuery.isLoading, statusQuery.isFetching]);
+
+  // Show error toast once if there's an error
+  useEffect(() => {
+    if (statusQuery.isError && !shownErrorToast.current) {
+      toast.error('Failed to fetch store.'); // you can include error details if desired
+      shownErrorToast.current = true;
+    }
+  }, [statusQuery.isError]);
 
   return {
     // form + helpers

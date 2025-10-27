@@ -1,6 +1,6 @@
 'use client';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { PackageIcon, Search, Shield, ShoppingCart } from 'lucide-react';
+import { ListOrdered, PackageIcon, Search, Shield, ShoppingCart, Store } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -72,7 +72,7 @@ const Navbar = () => {
               <UserButton>
                 <UserButton.MenuItems>
                   <UserButton.Action
-                    labelIcon={<Shield size={16} />}
+                    labelIcon={<ListOrdered size={16} />}
                     label='My Orders'
                     onClick={() => router.push('/orders')}
                   />
@@ -82,8 +82,8 @@ const Navbar = () => {
                   isAdmin && (
                     <UserButton.MenuItems>
                       <UserButton.Action
-                        labelIcon={<PackageIcon size={16} />}
-                        label='Admin'
+                        labelIcon={<Shield size={16} />}
+                        label='Admin Dashboard'
                         onClick={() => router.push('/admin')}
                       />
                     </UserButton.MenuItems>
@@ -92,7 +92,7 @@ const Navbar = () => {
                 {isSeller && (
                   <UserButton.MenuItems>
                     <UserButton.Action
-                      labelIcon={<Shield size={16} />}
+                      labelIcon={<Store size={16} />}
                       label='Seller Dashboard'
                       onClick={() => router.push('/store')}
                     />
@@ -123,7 +123,7 @@ const Navbar = () => {
                   </UserButton.MenuItems>
                   <UserButton.MenuItems>
                     <UserButton.Action
-                      labelIcon={<PackageIcon size={16} />}
+                      labelIcon={<ListOrdered size={16} />}
                       label='My Orders'
                       onClick={() => router.push('/orders')}
                     />
@@ -143,7 +143,7 @@ const Navbar = () => {
                   {isSeller && (
                     <UserButton.MenuItems>
                       <UserButton.Action
-                        labelIcon={<Shield size={16} />}
+                        labelIcon={<Store size={16} />}
                         label='Seller Dashboard'
                         onClick={() => router.push('/store')}
                       />

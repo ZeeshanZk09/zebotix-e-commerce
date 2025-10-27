@@ -4,6 +4,7 @@ import { getAuth } from '@clerk/nextjs/server';
 import { ImageKitUploadNetworkError } from '@imagekit/next';
 import { NextRequest } from 'next/server';
 import imageKit from '../../../../../configs/imageKit';
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = getAuth(request);
@@ -63,7 +64,6 @@ export async function POST(request: NextRequest) {
         userId: userId as string,
       },
     });
-
     await Prisma.user.update({
       where: {
         id: userId as string,
@@ -74,7 +74,6 @@ export async function POST(request: NextRequest) {
             id: newStore.id,
           },
         },
-        role: 'SELLER',
       },
     });
     return sendSuccessResponse(201, 'Applied waiting for approval', {});

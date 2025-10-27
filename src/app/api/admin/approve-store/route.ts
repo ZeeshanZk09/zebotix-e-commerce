@@ -24,6 +24,14 @@ export async function POST(request: NextRequest) {
           isActive: true,
         },
       });
+      await Prisma.user.update({
+        where: {
+          id: userId as string,
+        },
+        data: {
+          role: 'SELLER',
+        },
+      });
     } else if (status === 'rejected') {
       await Prisma.store.update({
         where: {
