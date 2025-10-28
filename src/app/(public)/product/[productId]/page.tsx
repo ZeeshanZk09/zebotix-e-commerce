@@ -2,13 +2,26 @@ import ProductDescription from '@/components/ProductDescription';
 import ProductDetails from '@/components/ProductDetails';
 import { Product } from '@/generated/prisma/browser';
 import { productDummyData } from '../../../../../public/assets/assets';
+import { useAppSelector } from '@/lib/redux/hooks';
+import axios from 'axios';
+import { getProductById, getProducts } from '@/lib/server-actions/product';
 
 // ✅ Static page revalidation time (in seconds)
 export const revalidate = 60;
+let product: any = {};
 
 // ✅ Generate metadata dynamically for each product (SEO + OG)
-export async function generateMetadata({ params }: { params: { productId: string } }) {
-  const product = productDummyData.find((p) => p.id === params.productId);
+export async function generateMetadata({ params }: { params: Promise<{ productId: string }> }) {
+  const productId = (await params).productId;
+
+  console.log('product id:', productId);
+
+  try {
+    product = await getProductById(productId);
+  } catch (err) {
+    console.error(err);
+  }
+
   if (!product) return { title: 'Product Not Found' };
 
   return {
@@ -17,23 +30,25 @@ export async function generateMetadata({ params }: { params: { productId: string
     openGraph: {
       title: product.name,
       description: product.description,
-      images: [product.images?.[0] || '/default-image.png'],
+      images: [(product?.images as any)?.[0] || '/default-image.png'],
     },
   };
 }
 
 // ✅ Page component
-export default async function ProductPage({ params }: { params: { productId: string } }) {
+export default async function ProductPage({ params }: { params: Promise<{ productId: string }> }) {
   // Simulate fetching product (replace with DB later)
-  const product = productDummyData.find((p) => p.id === params.productId) as Product | undefined;
+  // const product = productDummyData.find((p) => p.id === params.productId) as Product | undefined;
 
-  if (!product) {
-    return (
-      <div className='min-h-[70vh] flex items-center justify-center text-slate-500'>
-        Product not found.
-      </div>
-    );
-  }
+  // if (!product) {
+  //   return (
+  //     <div className='min-h-[70vh] flex items-center justify-center text-slate-500'>
+  //       Product not found.
+  //     </div>
+  //   );
+  // }
+
+  const data = (await params).productId;
 
   return (
     <div className='mx-6'>
@@ -42,10 +57,10 @@ export default async function ProductPage({ params }: { params: { productId: str
         <div className='text-gray-600 text-sm mt-8 mb-5'>Home / Products / {product.category}</div>
 
         {/* Product Details */}
-        <ProductDetails product={product as any} />
+        <ProductDetails productId={data} />
 
         {/* Description & Reviews */}
-        <ProductDescription product={product as any} />
+        <ProductDescription productId={data} />
       </div>
     </div>
   );
@@ -53,7 +68,50 @@ export default async function ProductPage({ params }: { params: { productId: str
 
 // ✅ Generate all product paths at build time
 export async function generateStaticParams() {
-  return productDummyData.map((product) => ({
+  let products:
+    | ({
+        store: {
+          description: string;
+          name: string;
+          id: string;
+          createdAt: Date;
+          updatedAt: Date;
+          userId: string;
+          username: string;
+          address: string;
+          status: string;
+          isActive: boolean;
+          logo: string;
+          email: string;
+          contact: string;
+        };
+        rating: {
+          createdAt: Date;
+          rating: number;
+          user: {
+            name: string;
+            image: string | null;
+          };
+          review: string;
+        }[];
+      } & {
+        description: string;
+        name: string;
+        images: string[];
+        category: string;
+        id: string;
+        mrp: number;
+        price: number;
+        inStock: boolean;
+        storeId: string;
+        createdAt: Date;
+        updatedAt: Date;
+      })[]
+    | null = [];
+  try {
+    products = await getProducts();
+  } catch (error) {}
+  return products?.map((product) => ({
     productId: product.id,
   }));
 }

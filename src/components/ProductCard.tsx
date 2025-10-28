@@ -16,11 +16,11 @@ const ProductCard = ({ product }: { product: ProductCreateInput }) => {
       : 0;
   return (
     <Link href={`/product/${product.id}`} className=' group max-xl:mx-auto'>
-      <div className='bg-[#F5F5F5] h-40  sm:w-60 sm:h-68 rounded-lg flex items-center justify-center'>
+      <div className='bg-[#F5F5F5] h-40 group-hover:scale-110 transition duration-300 sm:w-60 sm:h-68 rounded-lg flex items-center justify-center'>
         <Image
           width={500}
           height={500}
-          className='max-h-30 sm:max-h-40 w-auto group-hover:scale-115 transition duration-300'
+          className='max-h-30 sm:max-h-40 w-auto'
           src={Array.isArray(product.images) ? (product?.images[0] as string) : ''}
           alt=''
         />

@@ -1,9 +1,25 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Address } from '@/generated/prisma/browser';
+import axios from 'axios';
 
 interface AddressState {
   list: Address[];
 }
+
+export const fetchAddress = createAsyncThunk(
+  'address/fetchAddress',
+  async (getToken: any, thunkAPI) => {
+    try {
+      const token = typeof getToken === 'function' ? await getToken() : undefined;
+      const res = await axios.get<{ data: Address[] }>('/api/address', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      return res.data.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
+  }
+);
 
 const initialState: AddressState = {
   list: [] as Address[],
@@ -22,6 +38,11 @@ const addressSlice = createSlice({
     clearAddresses: (state: AddressState) => {
       state.list = [];
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchAddress.fulfilled, (state, action) => {
+      state.list = action.payload;
+    });
   },
 });
 

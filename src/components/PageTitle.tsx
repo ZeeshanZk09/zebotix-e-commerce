@@ -5,7 +5,7 @@ import Link from 'next/link';
 const PageTitle = ({
   heading,
   text,
-  path = '/',
+  path = '/shop',
   linkText,
 }: {
   heading: string;

@@ -7,9 +7,14 @@ import {
   storesDummyData,
 } from './../../../../../public/assets/assets';
 import { Product, Store } from '@/generated/prisma/browser';
+import { getStoreByUsername } from '@/lib/server-actions/store';
 
-export async function generateMetadata({ params }: { params: { username: string } }) {
-  const store = dummyStoreData;
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
+  const username = (await params).username;
+
+  const response = (await getStoreByUsername(username)).json();
+  console.log(await response);
+  const store = (await response).data as Store;
   return {
     title: `${store.name} | Shop`,
     description: store.description,
@@ -22,11 +27,13 @@ export async function generateMetadata({ params }: { params: { username: string 
 export const revalidate = 60;
 
 export default async function StoreShop({ params }: { params: Promise<{ username: string }> }) {
-  // Simulate server-side fetching (replace with DB call later)
-  const storeInfo = dummyStoreData;
-  const products = productDummyData;
-
   const username = (await params).username;
+
+  const response = (await getStoreByUsername(username)).json();
+
+  // Simulate server-side fetching (replace with DB call later)
+  const storeInfo = (await response).data;
+  const products = (await response).data.Product;
 
   if (!storeInfo) {
     return (
@@ -70,7 +77,7 @@ export default async function StoreShop({ params }: { params: Promise<{ username
           Shop <span className='text-slate-800 font-medium'>Products</span>
         </h1>
         <div className='mt-5 grid grid-cols-2 sm:flex flex-wrap gap-6 xl:gap-12 mx-auto'>
-          {products.map((product) => (
+          {products.map((product: Product) => (
             <ProductCard key={product.id} product={product as any} />
           ))}
         </div>

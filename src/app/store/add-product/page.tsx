@@ -58,7 +58,7 @@ export default function StoreAddProduct() {
         }
       });
       const token = await getToken();
-      const response = await axios.post('/api/store/product', formData, {
+      const response = await axios.post('/api/store/products', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

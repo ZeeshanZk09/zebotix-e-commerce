@@ -26,6 +26,8 @@ const Navbar = () => {
     setMounted(true);
   }, []);
 
+  console.log(cartCount);
+
   return (
     <nav className='relative bg-white'>
       <div className='mx-6'>

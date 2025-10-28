@@ -7,8 +7,10 @@ import { productDummyData } from '../../public/assets/assets';
 
 const LatestProducts = () => {
   const displayQuantity = 4;
-  // const products = useAppSelector((state) => state.product.list);
-  const products = productDummyData;
+  const products = useAppSelector((state) => state.product.list);
+  // const products = productDummyData;
+
+  console.log(products);
 
   return (
     <div className='px-6 my-30 max-w-6xl mx-auto'>
@@ -22,7 +24,10 @@ const LatestProducts = () => {
       <div className='mt-12 grid grid-cols-2 sm:flex flex-wrap gap-6 justify-between'>
         {products
           .slice()
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt as any).getTime() - new Date(a.createdAt as any).getTime()
+          )
           .slice(0, displayQuantity)
           .map((product, index) => (
             <ProductCard key={index} product={product as any} />

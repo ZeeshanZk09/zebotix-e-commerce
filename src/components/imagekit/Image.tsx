@@ -7,10 +7,12 @@ export default function ImageKit({
   className,
   src,
   alt,
+  handleError,
 }: {
   className?: string;
   src: string | StaticImageData;
   alt: string;
+  handleError?: () => void;
 }) {
   const [showPlaceholder, setShowPlaceholder] = useState(true);
   return (
@@ -23,6 +25,7 @@ export default function ImageKit({
         src={src as string}
         width={500}
         height={500}
+        onError={handleError}
         style={
           showPlaceholder
             ? {

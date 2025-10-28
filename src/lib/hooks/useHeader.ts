@@ -8,6 +8,7 @@ import axios from '@/lib/axios';
 import { useAdmin } from './useAdmin';
 import { useAppSelector } from '../redux/hooks';
 import toast from 'react-hot-toast';
+import { selectCartItemsCount, selectCartTotalQuantity } from '../redux/features/cart/cartSlice';
 
 type SearchResult = {
   id: string;
@@ -23,7 +24,9 @@ export function useHeader(opts?: { prefetchMs?: number }) {
   const { openSignIn } = useClerk();
   const { isAdmin } = useAdmin();
   const queryClient = useQueryClient();
-  const cartCount = useAppSelector((s: any) => s.cart?.total ?? 0);
+  const cartCount = selectCartTotalQuantity(useAppSelector((state) => state));
+
+  console.log('cart count: ', cartCount);
 
   const [search, setSearch] = useState<string>('');
   const debMs = opts?.prefetchMs ?? 300;
@@ -91,7 +94,7 @@ export function useHeader(opts?: { prefetchMs?: number }) {
         if ((err as any)?.name === 'CanceledError' || (err as any)?.message === 'canceled') {
           // noop
         } else {
-          // console.debug('prefetchSearch failed', err);
+          console.debug('prefetchSearch failed', err);
         }
       } finally {
         // clear controller if it is still ours
