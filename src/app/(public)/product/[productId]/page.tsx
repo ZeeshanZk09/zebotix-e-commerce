@@ -67,7 +67,7 @@ export default async function ProductPage({ params }: { params: Promise<{ produc
 }
 
 // ✅ Generate all product paths at build time
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<({ productId: string } | undefined)[]> {
   let products:
     | ({
         store: {
@@ -109,9 +109,15 @@ export async function generateStaticParams() {
       })[]
     | null = [];
   try {
-    products = await getProducts();
-  } catch (error) {}
-  return products?.map((product) => ({
-    productId: product.id,
-  }));
+    products = (await getProducts()) ?? [];
+    if (!products) return [];
+    return products.map((product) => {
+      return {
+        productId: product.id,
+      };
+    });
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }

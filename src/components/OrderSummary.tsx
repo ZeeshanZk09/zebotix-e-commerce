@@ -1,14 +1,18 @@
 'use client';
 
 import { PlusIcon, SquarePenIcon, XIcon } from 'lucide-react';
-import React, { useState, FormEvent, ChangeEvent } from 'react';
+import React, { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import AddressModal from './AddressModal';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { Address, Coupon, OrderItem } from '@/generated/prisma/browser';
 import { OrderItemCreateInput } from '@/generated/prisma/models';
-
+import { Protect, useUser } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
+import axios from 'axios';
+import { fetchCart } from '@/lib/redux/features/cart/cartSlice';
+import useCheckout from '@/lib/hooks/useCheckout';
 // ✅ Component props
 interface OrderSummaryProps {
   totalPrice: number;
@@ -16,47 +20,31 @@ interface OrderSummaryProps {
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
-  const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
-  const router = useRouter();
+  const { user } = useUser();
+  const dispatch = useAppDispatch();
+  const { getToken } = useAuth();
+  const {
+    addresses: addressList,
+    cart,
+    showAddressModal,
+    paymentMethod,
+    setPaymentMethod,
+    selectedAddress,
+    setSelectedAddress,
+    couponCodeInput,
+    setCouponCodeInput,
+    setShowAddressModal,
+    coupon,
+    currency,
+    setCoupon,
+    handleApplyCoupon,
+    handlePlaceOrder,
+    isPlacingOrder,
+  } = useCheckout();
 
-  // ✅ Typed Redux state selector
-  const addressList = useAppSelector((state) => state.address.list as Address[]);
-
-  // ✅ Local state types
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'STRIPE'>('COD');
-  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
-  const [showAddressModal, setShowAddressModal] = useState(false);
-  const [couponCodeInput, setCouponCodeInput] = useState('');
-  const [coupon, setCoupon] = useState<Coupon | null>(null);
-
-  // ✅ Handlers
-  const handleCouponCode = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Example mock logic (replace with API later)
-    if (couponCodeInput.toLowerCase() === 'save10') {
-      setCoupon({
-        code: 'SAVE10',
-        description: '10% off your order',
-        discount: 10,
-      } as Coupon);
-      toast.success('Coupon applied successfully!');
-    } else {
-      toast.error('Invalid coupon code');
-    }
-  };
-
-  const handlePlaceOrder = async (
-    e: FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
-  ) => {
-    e.preventDefault();
-    if (!selectedAddress) {
-      toast.error('Please select or add an address.');
-      return;
-    }
-
-    // Add order logic (API call etc.)
-    router.push('/orders');
-  };
+  useEffect(() => {
+    dispatch(fetchCart(getToken));
+  }, [dispatch, getToken]);
 
   return (
     <div className='w-full max-w-lg lg:max-w-[340px] bg-slate-50/30 border border-slate-200 text-slate-500 text-sm rounded-xl p-7'>
@@ -69,7 +57,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
           type='radio'
           id='COD'
           name='payment'
-          onChange={() => setPaymentMethod('COD')}
+          onChange={() => {
+            if (!user) return toast.error('Please login to proceed.');
+            return setPaymentMethod('COD');
+          }}
           checked={paymentMethod === 'COD'}
           className='accent-gray-500'
         />
@@ -83,7 +74,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
           type='radio'
           id='STRIPE'
           name='payment'
-          onChange={() => setPaymentMethod('STRIPE')}
+          onChange={() => {
+            if (!user) return toast.error('Please login to proceed.');
+            return setPaymentMethod('STRIPE');
+          }}
           checked={paymentMethod === 'STRIPE'}
           className='accent-gray-500'
         />
@@ -108,20 +102,26 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
             />
           </div>
         ) : (
-          <div>
+          <>
             {addressList.length > 0 && (
               <select
                 className='border border-slate-400 p-2 w-full my-3 outline-none rounded'
-                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                  setSelectedAddress(addressList[Number(e.target.value)])
-                }
+                onClick={() => {
+                  if (!user) return toast.error('Please login to proceed.');
+                  return;
+                }}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                  if (!user) return toast.error('Please login to proceed.');
+                  return setSelectedAddress(addressList[Number(e.target.value)]);
+                }}
               >
                 <option value=''>Select Address</option>
-                {addressList.map((address, index) => (
-                  <option key={index} value={index}>
-                    {address.name}, {address.city}, {address.state}, {address.zip}
-                  </option>
-                ))}
+                {user &&
+                  addressList.map((address, index) => (
+                    <option key={index} value={index}>
+                      {address.name}, {address.city}, {address.state}, {address.zip}
+                    </option>
+                  ))}
               </select>
             )}
             <button
@@ -130,7 +130,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
             >
               Add Address <PlusIcon size={18} />
             </button>
-          </div>
+          </>
         )}
       </div>
 
@@ -147,11 +147,15 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
               {currency}
               {totalPrice.toLocaleString()}
             </p>
-            <p>Free</p>
+            <p>
+              <Protect plan='plus' fallback={`${currency}5`}>
+                Free
+              </Protect>
+            </p>
             {coupon && (
               <p>
                 -{currency}
-                {((coupon.discount / 100) * totalPrice).toFixed(2)}
+                {((coupon?.discount! / 100) * totalPrice).toFixed(2)}
               </p>
             )}
           </div>
@@ -160,11 +164,14 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
         {/* Coupon Code */}
         {!coupon ? (
           <form
-            onSubmit={(e) => toast.promise(handleCouponCode(e), { loading: 'Checking Coupon...' })}
+            onSubmit={(e) => toast.promise(handleApplyCoupon(e), { loading: 'Checking Coupon...' })}
             className='flex justify-center gap-3 mt-3'
           >
             <input
-              onChange={(e) => setCouponCodeInput(e.target.value)}
+              onChange={(e) => {
+                if (!user) return toast.error('Please login to proceed.');
+                return setCouponCodeInput(e.target.value);
+              }}
               value={couponCodeInput}
               type='text'
               placeholder='Coupon Code'
@@ -193,10 +200,20 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ totalPrice, items }) => {
       <div className='flex justify-between py-4'>
         <p>Total:</p>
         <p className='font-medium text-right'>
-          {currency}
-          {coupon
-            ? (totalPrice - (coupon.discount / 100) * totalPrice).toFixed(2)
-            : totalPrice.toLocaleString()}
+          <Protect
+            plan='plus'
+            fallback={`${currency}
+          ${
+            coupon
+              ? (totalPrice + 5 - (coupon?.discount! / 100) * totalPrice).toFixed(2)
+              : (totalPrice + 5).toLocaleString()
+          }`}
+          >
+            {currency}
+            {coupon
+              ? (totalPrice - (coupon?.discount! / 100) * totalPrice).toFixed(2)
+              : totalPrice.toLocaleString()}
+          </Protect>
         </p>
       </div>
 

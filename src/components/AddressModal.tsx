@@ -41,9 +41,10 @@ const AddressModal = ({ setShowAddressModal }: { setShowAddressModal: (b: boolea
   };
 
   // submit returns a promise we can pass to toast.promise
-  const handleSubmit = async (): Promise<void> => {
+  const handleSubmit = async (): Promise<void | string> => {
     setIsSubmitting(true);
     try {
+      if (!user) return toast.error('Please login to proceed.');
       const token = await getToken();
       const res = await axios.post(
         '/api/address',

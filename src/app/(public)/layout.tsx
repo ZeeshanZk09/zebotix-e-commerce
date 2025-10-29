@@ -10,6 +10,7 @@ import { useUser } from '@clerk/nextjs';
 import { useAuth } from '@clerk/clerk-react';
 import { fetchCart, uploadCart } from '@/lib/redux/features/cart/cartSlice';
 import { fetchAddress } from '@/lib/redux/features/address/addressSlice';
+import { fetchRatings } from '@/lib/redux/features/rating/ratingSlice';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -36,6 +37,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       try {
         await dispatch(fetchCart(getToken));
         await dispatch(fetchAddress(getToken));
+        await dispatch(fetchRatings(getToken));
       } catch (err) {
         // Optional: show toast/log, but avoid noisy console logs
         console.error('fetchCart or fetchAddress error', err);

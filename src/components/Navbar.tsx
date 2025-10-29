@@ -4,9 +4,11 @@ import { ListOrdered, PackageIcon, Search, Shield, ShoppingCart, Store } from 'l
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useUser, useClerk, UserButton } from '@clerk/nextjs';
+import { useUser, useClerk, UserButton, Protect } from '@clerk/nextjs';
 import { useAdmin } from '@/lib/hooks/useAdmin';
 import useHeader from '@/lib/hooks/useHeader';
+import { selectCartTotalQuantity } from '@/lib/redux/features/cart/cartSlice';
+import { RootState } from '@/lib/redux/store';
 const Navbar = () => {
   const {
     search,
@@ -16,7 +18,6 @@ const Navbar = () => {
     openSignIn,
     setSearch,
     handleSearch,
-    cartCount,
     handleAuthAction,
     isSeller,
   } = useHeader();
@@ -26,7 +27,8 @@ const Navbar = () => {
     setMounted(true);
   }, []);
 
-  console.log(cartCount);
+  const cartCount = useAppSelector(selectCartTotalQuantity);
+  // console.log(cartCount);
 
   return (
     <nav className='relative bg-white'>
@@ -35,9 +37,11 @@ const Navbar = () => {
           <Link href='/' className='relative text-4xl font-semibold text-slate-700'>
             <span className='text-green-600'>go</span>cart
             <span className='text-green-600 text-5xl leading-0'>.</span>
-            <p className='absolute text-xs font-semibold -top-1 -right-8 px-3 p-0.5 rounded-full flex items-center gap-2 text-white bg-green-500'>
-              plus
-            </p>
+            <Protect plan={'plus'}>
+              <p className='absolute text-xs font-semibold -top-1 -right-8 px-3 p-0.5 rounded-full flex items-center gap-2 text-white bg-green-500'>
+                plus
+              </p>
+            </Protect>
           </Link>
 
           {/* Desktop Menu */}
@@ -48,7 +52,7 @@ const Navbar = () => {
             <Link href='/'>Contact</Link>
 
             <form
-              onSubmit={handleSearch}
+              onSubmit={handleSearch as any}
               className='hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full'
             >
               <Search size={18} className='text-slate-600' />

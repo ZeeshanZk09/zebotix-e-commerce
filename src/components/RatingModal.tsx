@@ -5,6 +5,10 @@ import React, { useState } from 'react';
 import { XIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Rating } from '@/generated/prisma/browser';
+import { useAuth } from '@clerk/nextjs';
+import axios from 'axios';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { addRating } from '@/lib/redux/features/rating/ratingSlice';
 
 const RatingModal = ({
   ratingModal,
@@ -15,7 +19,8 @@ const RatingModal = ({
 }) => {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
-
+  const { getToken } = useAuth();
+  const dispatch = useAppDispatch();
   const handleSubmit = async () => {
     if (rating < 0 || rating > 5) {
       return toast('Please select a rating');
@@ -24,7 +29,29 @@ const RatingModal = ({
       return toast('write a short review');
     }
 
-    setRatingModal(null);
+    try {
+      const token = await getToken();
+      const response = await axios.post(
+        '/api/rating',
+        {
+          rating,
+          review,
+          productId: ratingModal?.productId,
+          orderId: ratingModal?.orderId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      dispatch(addRating(response.data.data));
+      setRatingModal(null);
+      toast.success(response.data.message || 'Rating submitted successfully');
+    } catch (error: any) {
+      console.log(error);
+      toast.error(error.response.data.message || 'Something went wrong');
+    }
   };
 
   return (

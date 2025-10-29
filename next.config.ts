@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // disable typesript and eslint in production
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;

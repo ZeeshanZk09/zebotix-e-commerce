@@ -6,9 +6,7 @@ import { useAuth, useClerk } from '@clerk/clerk-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from '@/lib/axios';
 import { useAdmin } from './useAdmin';
-import { useAppSelector } from '../redux/hooks';
 import toast from 'react-hot-toast';
-import { selectCartItemsCount, selectCartTotalQuantity } from '../redux/features/cart/cartSlice';
 
 type SearchResult = {
   id: string;
@@ -17,6 +15,12 @@ type SearchResult = {
   // add other fields
 };
 
+const ENABLE_LOG = process.env.NODE_ENV === 'development';
+// small helper
+function debug(...args: any[]) {
+  if (ENABLE_LOG) console.debug('[useHeader]', ...args);
+}
+
 export function useHeader(opts?: { prefetchMs?: number }) {
   const router = useRouter();
   const { user } = useUser();
@@ -24,9 +28,6 @@ export function useHeader(opts?: { prefetchMs?: number }) {
   const { openSignIn } = useClerk();
   const { isAdmin } = useAdmin();
   const queryClient = useQueryClient();
-  const cartCount = selectCartTotalQuantity(useAppSelector((state) => state));
-
-  console.log('cart count: ', cartCount);
 
   const [search, setSearch] = useState<string>('');
   const debMs = opts?.prefetchMs ?? 300;
@@ -39,14 +40,28 @@ export function useHeader(opts?: { prefetchMs?: number }) {
   // Keyed by user id so it refetches when user changes
   const storeQuery = useQuery({
     queryKey: ['store', 'isSeller', user?.id || 'anon'],
-    queryFn: async () => {
-      const token = await getToken();
-      const res = await axios.post('/api/store/is-seller', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      // expected: { data: { isSeller: boolean, store: {...} } }
-      console.log(res.data);
-      return res.data.data;
+    queryFn: async ({ signal }) => {
+      try {
+        const token = await getToken();
+        const res = await axios.post('/api/store/is-seller', {
+          headers: { Authorization: `Bearer ${token}` },
+          signal,
+        });
+        // expected: { data: { isSeller: boolean, store: {...} } }
+        console.log(res.data);
+        return res.data.data;
+      } catch (err: any) {
+        if (
+          err?.code === 'ERR_CANCELED' ||
+          err?.name === 'CanceledError' ||
+          err?.message === 'canceled'
+        ) {
+          debug('storeQuery: request canceled/aborted');
+          throw err; // let react-query mark it as cancelled/aborted (it won't trigger error UI)
+        }
+        debug('storeQuery error', err?.message ?? err);
+        throw err;
+      }
     },
 
     enabled: !!user,
@@ -80,10 +95,10 @@ export function useHeader(opts?: { prefetchMs?: number }) {
       try {
         await queryClient.prefetchQuery({
           queryKey: key,
-          queryFn: async () => {
+          queryFn: async ({ signal }) => {
             const res = await axios.get<{ data: SearchResult[] }>(
               `/api/shop/search?q=${encodeURIComponent(q.trim())}`,
-              { signal: controller.signal }
+              { signal }
             );
             return res.data.data;
           },
@@ -134,10 +149,12 @@ export function useHeader(opts?: { prefetchMs?: number }) {
 
   // ---------- submit handler ----------
   const handleSearch = useCallback(
-    (e?: React.FormEvent<HTMLFormElement>) => {
+    (query: string, e?: React.FormEvent<HTMLFormElement>) => {
       if (e) e.preventDefault();
       const q = (search ?? '').trim();
-      router.push(`/shop${q ? `?search=${encodeURIComponent(q)}` : ''}`);
+      router.push(
+        `/shop${q ? `?search=${encodeURIComponent(q)}` : `?search=${encodeURIComponent(query)}`}`
+      );
     },
     [router, search]
   );
@@ -215,9 +232,6 @@ export function useHeader(opts?: { prefetchMs?: number }) {
 
     // actions
     handleSearch,
-
-    // derived
-    cartCount,
 
     // utilities
     prefetchSearch,

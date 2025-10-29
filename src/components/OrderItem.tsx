@@ -15,8 +15,8 @@ const OrderItem = ({ order }: { order: OrderModel | OrderCreateInput | any }) =>
   const { ratings } = useAppSelector((state) => state.rating);
   const orderItems = Array.isArray((order as any)?.orderItems)
     ? (order as any).orderItems
-    : Array.isArray((order as any)?.orderItems?.connect)
-    ? (order as any)?.orderItems?.connect
+    : Array.isArray((order as any)?.orderItems)
+    ? (order as any)?.orderItems
     : [];
   return (
     <>
@@ -84,13 +84,13 @@ const OrderItem = ({ order }: { order: OrderModel | OrderCreateInput | any }) =>
 
         <td className='text-left max-md:hidden'>
           <p>
-            {order.address.connect?.name as string}, {order.address.connect?.street as string},
+            {order.address?.name as string}, {order.address?.street as string},
           </p>
           <p>
-            {order.address.connect?.city as string}, {order.address.connect?.state as string},{' '}
-            {order.address.connect?.zip as string}, {order.address.connect?.country as string},
+            {order.address?.city as string}, {order.address?.state as string},{' '}
+            {order.address?.zip as string}, {order.address?.country as string},
           </p>
-          <p>{order.address?.connect?.phone as string}</p>
+          <p>{order.address?.phone as string}</p>
         </td>
 
         <td className='text-left space-y-2 text-sm max-md:hidden'>
@@ -112,13 +112,13 @@ const OrderItem = ({ order }: { order: OrderModel | OrderCreateInput | any }) =>
       <tr className='md:hidden'>
         <td colSpan={5}>
           <p>
-            {order.address?.connect?.name as string}, {order.address?.connect?.street as string}
+            {order.address?.name as string}, {order.address?.street as string}
           </p>
           <p>
-            {order.address.connect?.city as string}, {order.address?.connect?.state as string},{' '}
-            {order.address.connect?.zip as string}, {order.address?.connect?.country as string}
+            {order.address?.city as string}, {order.address?.state as string},{' '}
+            {order.address?.zip as string}, {order.address?.country as string}
           </p>
-          <p>{order.address?.connect?.phone as string}</p>
+          <p>{order.address?.phone as string}</p>
           <br />
           <div className='flex items-center'>
             <span className='text-center mx-auto px-6 py-1.5 rounded bg-green-100 text-green-700'>
