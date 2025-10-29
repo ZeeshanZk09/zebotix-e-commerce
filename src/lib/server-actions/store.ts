@@ -1,6 +1,7 @@
 // src/actions/storeActions.ts
 'use server';
 
+import { sendResponse } from 'next/dist/server/image-optimizer';
 import Prisma from '../prisma';
 import { sendSuccessResponse, sendErrorResponse } from '@/utils/sendResponse';
 
@@ -57,6 +58,37 @@ async function fetchStoreByUsername(username: string) {
  */
 export async function getStoreByUsername(username: string) {
   return await fetchStoreByUsername(username);
+}
+
+// get stores
+export async function getStores() {
+  try {
+    const stores = await Prisma.store.findMany({
+      where: { isActive: true, status: 'approved' },
+      include: {
+        Product: {
+          include: {
+            rating: true,
+          },
+        },
+      },
+    });
+    return stores;
+  } catch (err: any) {
+    console.error('[storeActions] error', err);
+
+    // relaxed network error detection (keep your checks)
+    const isNetworkErr =
+      err?.message?.includes('fetch failed') ||
+      err?.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
+      err?.name === 'NeonDbError' ||
+      err?.code === 'ENOTFOUND';
+
+    if (isNetworkErr) {
+      return 'Service Unavailable';
+    }
+    return err instanceof Error ? err.message : 'Something went wrong';
+  }
 }
 
 /**

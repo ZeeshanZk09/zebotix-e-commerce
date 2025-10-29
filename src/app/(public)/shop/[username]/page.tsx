@@ -1,13 +1,9 @@
 import ProductCard from '@/components/ProductCard';
 import { MailIcon, MapPinIcon } from 'lucide-react';
 import Image from 'next/image';
-import {
-  dummyStoreData,
-  productDummyData,
-  storesDummyData,
-} from './../../../../../public/assets/assets';
+
 import { Product, Store } from '@/generated/prisma/browser';
-import { getStoreByUsername } from '@/lib/server-actions/store';
+import { getStoreByUsername, getStores } from '@/lib/server-actions/store';
 
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
   const username = (await params).username;
@@ -86,8 +82,27 @@ export default async function StoreShop({ params }: { params: Promise<{ username
   );
 }
 
-export async function generateStaticParams() {
-  // ✅ Predefine or fetch from DB all usernames
-  const stores = storesDummyData;
-  return stores.map((store) => ({ username: store.username }));
+export async function generateStaticParams(): Promise<({ username: string } | undefined)[]> {
+  try {
+    const stores =
+      ((await getStores()) as {
+        status: string;
+        id: string;
+        userId: string;
+        username: string;
+        name: string;
+        description: string;
+        address: string;
+        isActive: boolean;
+        logo: string;
+        email: string;
+        contact: string;
+        createdAt: Date;
+        updatedAt: Date;
+      }[]) ?? [];
+    console.log(stores);
+    return stores?.map((store) => ({ username: store.username }));
+  } catch (error) {
+    return [];
+  }
 }
