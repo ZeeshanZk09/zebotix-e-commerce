@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'; // webhook cannot be cached
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
     const sig = request.headers.get('stripe-signature') as string;
