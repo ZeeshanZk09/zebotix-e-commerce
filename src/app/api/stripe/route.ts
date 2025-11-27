@@ -3,6 +3,9 @@ import { sendErrorResponse, sendSuccessResponse } from '@/utils/sendResponse';
 import Stripe from 'stripe';
 import Prisma from '@/lib/prisma';
 
+export const runtime = 'nodejs'; // required for raw body
+export const dynamic = 'force-dynamic'; // webhook cannot be cached
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
 export async function GET(request: NextRequest) {
@@ -76,9 +79,3 @@ export async function GET(request: NextRequest) {
     return sendErrorResponse(500, err instanceof Error ? err.message : 'Something went wrong');
   }
 }
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
