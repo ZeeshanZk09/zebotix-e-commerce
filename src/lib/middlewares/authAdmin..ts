@@ -9,7 +9,7 @@ export default async function authAdmin(userId: string) {
       user?.email === 'apnacampus.it@gmail.com' ||
       user?.email === 'dr5269139@gmail.com';
 
-    console.log('iAdmin', isSuperAdmin);
+    console.log('This is a super Admin.', isSuperAdmin);
 
     await Prisma.user.update({
       where: { id: userId },
@@ -17,7 +17,7 @@ export default async function authAdmin(userId: string) {
         role: isSuperAdmin ? 'ADMIN' : 'CUSTOMER',
       },
     });
-    const isAdmin = user?.role === 'ADMIN' ? true : false;
+    const isAdmin = user?.role === 'ADMIN' ? user : false;
     return isAdmin;
   } catch (error) {
     console.log(error);

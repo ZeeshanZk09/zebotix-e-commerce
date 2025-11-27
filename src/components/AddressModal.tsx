@@ -94,18 +94,18 @@ const AddressModal = ({ setShowAddressModal }: { setShowAddressModal: (b: boolea
           error: (err: any) => err?.message ?? 'Could not add address',
         });
       }}
-      className='fixed inset-0 z-50 bg-white/60 backdrop-blur h-screen flex items-center justify-center'
+      className='p-2 fixed inset-0 z-50 bg-white/60 backdrop-blur h-screen flex items-center justify-center'
     >
-      <div className='flex flex-col gap-5 text-slate-700 w-full max-w-sm mx-6'>
+      <div className='p-6 rounded-md flex flex-col gap-5 text-slate-700 bg-black/10 w-full max-w-fit mx-6'>
         <h2 className='text-3xl '>
           Add New <span className='font-semibold'>Address</span>
         </h2>
 
         <input
-          name='name'
           onChange={handleAddressChange}
+          name='name'
           value={address.name}
-          className='p-2 px-4 ...'
+          className='p-2 px-4 bg-black/5'
           type='text'
           placeholder='Enter your name'
           required
@@ -115,7 +115,7 @@ const AddressModal = ({ setShowAddressModal }: { setShowAddressModal: (b: boolea
           name='email'
           onChange={handleAddressChange}
           value={address.email}
-          className='p-2 px-4 ...'
+          className='p-2 px-4 bg-black/5'
           type='email'
           placeholder='Email address'
           required
@@ -125,18 +125,18 @@ const AddressModal = ({ setShowAddressModal }: { setShowAddressModal: (b: boolea
           name='street'
           onChange={handleAddressChange}
           value={address.street}
-          className='p-2 px-4 ...'
+          className='p-2 px-4 bg-black/5'
           type='text'
           placeholder='Street'
           required
         />
 
-        <div className='flex gap-4'>
+        <div className='flex max-sm:flex-wrap gap-4'>
           <input
             name='city'
             onChange={handleAddressChange}
             value={address.city}
-            className='p-2 px-4 ...'
+            className='w-full p-2 px-4 bg-black/5'
             type='text'
             placeholder='City'
             required
@@ -145,19 +145,19 @@ const AddressModal = ({ setShowAddressModal }: { setShowAddressModal: (b: boolea
             name='state'
             onChange={handleAddressChange}
             value={address.state}
-            className='p-2 px-4 ...'
+            className='w-full p-2 px-4 bg-black/5'
             type='text'
             placeholder='State'
             required
           />
         </div>
 
-        <div className='flex gap-4'>
+        <div className='flex max-sm:flex-wrap gap-4'>
           <input
             name='zip'
             onChange={handleAddressChange}
             value={address.zip}
-            className='p-2 px-4 ...'
+            className='w-full p-2 px-4 bg-black/5'
             type='number'
             placeholder='Zip code'
             required
@@ -166,7 +166,7 @@ const AddressModal = ({ setShowAddressModal }: { setShowAddressModal: (b: boolea
             name='country'
             onChange={handleAddressChange}
             value={address.country}
-            className='p-2 px-4 ...'
+            className='w-full p-2 px-4 bg-black/5'
             type='text'
             placeholder='Country'
             required
@@ -177,7 +177,7 @@ const AddressModal = ({ setShowAddressModal }: { setShowAddressModal: (b: boolea
           name='phone'
           onChange={handleAddressChange}
           value={address.phone}
-          className='p-2 px-4 ...'
+          className='p-2 px-4 bg-black/5'
           type='text'
           placeholder='Phone'
           required

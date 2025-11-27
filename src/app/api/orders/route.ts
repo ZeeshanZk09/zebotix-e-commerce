@@ -2,7 +2,8 @@ import { Order } from '@/generated/prisma/client';
 import Prisma from '@/lib/prisma';
 import { sendErrorResponse, sendSuccessResponse } from '@/utils/sendResponse';
 import { getAuth } from '@clerk/nextjs/server';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
 const ENABLE_LOG = process.env.NODE_ENV === 'development';
 const log = {
@@ -72,6 +73,8 @@ export async function POST(request: NextRequest) {
 
     // Create orders per store
     const orders: Order[] = [];
+    const orderIds: any[] = [];
+
     let fullAmount = 0;
     let shippingAdded = false;
     const hasPlusPlan = typeof has === 'function' ? has({ plan: 'plus' }) : false;
@@ -106,9 +109,46 @@ export async function POST(request: NextRequest) {
       });
 
       orders.push(order);
+      orderIds.push(order.id);
+
       log.info('Order created', { orderId: order.id, storeId, total });
     }
 
+    if (paymentMethod === 'STRIPE') {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+      const origin = request.headers.get('origin');
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: 'Order',
+              },
+              unit_amount: Math.round(fullAmount * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        expires_at: Math.floor(Date.now() / 1000) + 60 * 60,
+        mode: 'payment',
+        success_url: `${origin}/loading?nextUrl=orders`,
+        cancel_url: `${origin}/cart`,
+        metadata: {
+          orders: JSON.stringify(orders),
+          orderIds: orderIds.join(','),
+          userId,
+          appId: 'e-commerce',
+        },
+      });
+      return sendSuccessResponse(200, 'Order created', {
+        url: session.url,
+        session,
+        paymentMethod,
+      });
+    }
     // Clear cart once
     await Prisma.user.update({
       where: { id: userId as string },

@@ -119,10 +119,11 @@ export default function useCheckout() {
     },
 
     onSuccess(data) {
+      console.log('place order data: ', data);
       // backend may return a session.url for stripe
-      const paymentMethodFromResp = data?.data?.[0]?.paymentMethod;
+      const paymentMethodFromResp = data?.data?.paymentMethod;
       if (paymentMethodFromResp === 'STRIPE') {
-        const url = data?.data?.session?.url;
+        const url = data?.data?.url;
         if (url) window.location.href = url;
         return;
       }
