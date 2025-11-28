@@ -1,9 +1,5 @@
 import ProductDescription from '@/components/ProductDescription';
 import ProductDetails from '@/components/ProductDetails';
-import { Product } from '@/generated/prisma/browser';
-import { productDummyData } from '../../../../../public/assets/assets';
-import { useAppSelector } from '@/lib/redux/hooks';
-import axios from 'axios';
 import { getProductById, getProducts } from '@/lib/server-actions/product';
 
 // ✅ Static page revalidation time (in seconds)
@@ -18,6 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ productId
 
   try {
     product = await getProductById(productId);
+    console.log("dynamic product page's product: ", product);
   } catch (err) {
     console.error(err);
   }
@@ -37,17 +34,6 @@ export async function generateMetadata({ params }: { params: Promise<{ productId
 
 // ✅ Page component
 export default async function ProductPage({ params }: { params: Promise<{ productId: string }> }) {
-  // Simulate fetching product (replace with DB later)
-  // const product = productDummyData.find((p) => p.id === params.productId) as Product | undefined;
-
-  // if (!product) {
-  //   return (
-  //     <div className='min-h-[70vh] flex items-center justify-center text-slate-500'>
-  //       Product not found.
-  //     </div>
-  //   );
-  // }
-
   const data = (await params).productId;
 
   return (

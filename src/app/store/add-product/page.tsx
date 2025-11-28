@@ -31,11 +31,68 @@ export default function StoreAddProduct() {
     category: '',
   });
   const [loading, setLoading] = useState(false);
+  const [aiUsed, setAiUsed] = useState(false);
   const { getToken } = useAuth();
   const onChangeHandler = (
     e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setProductInfo({ ...productInfo, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = async (key: number, file: File | null) => {
+    setImages((prev) => ({ ...prev, [key]: file }));
+
+    if (!file) return toast.error('Please upload an image.');
+
+    if (key === 1 && file && !aiUsed) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = async () => {
+        const base64String = (reader?.result as any)?.split(',')[1];
+        const mimeType = file.type;
+        const token = await getToken();
+
+        try {
+          await toast.promise(
+            axios.post(
+              '/api/store/ai',
+              {
+                base64Image: base64String,
+                mimeType,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            ),
+            {
+              loading: 'Analizing image with AI...',
+              success: (res) => {
+                const data = res.data;
+                console.log(res, data);
+                if (data.data.name && data.data.description) {
+                  setProductInfo((prev) => ({
+                    ...prev,
+                    name: data.data.name,
+                    description: data.data.description,
+                  }));
+                  setAiUsed(true);
+                  return 'AI filled product info successfully!';
+                }
+                return 'AI failed to fill product info';
+              },
+              error: (err) => {
+                console.log(err);
+                return err?.response?.data?.message || err.message;
+              },
+            }
+          );
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    }
   };
 
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -112,10 +169,7 @@ export default function StoreAddProduct() {
               accept='image/*'
               id={`images${key}`}
               onChange={(e) =>
-                setImages({
-                  ...images,
-                  [Number(key)]: e.target.files && e.target.files[0] ? e.target.files[0] : null,
-                })
+                handleImageUpload(Number(key), e.target.files ? e.target.files[0] : null)
               }
               hidden
             />

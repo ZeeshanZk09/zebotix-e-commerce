@@ -55,10 +55,10 @@ export function useAdmin() {
   // Show success toast when loading finishes and we have data
   useEffect(() => {
     if (!query.isLoading && !query.isFetching && !shownSuccessToast.current) {
-      console.log(user);
       shownSuccessToast.current = true;
     }
     if (query.data) {
+      console.log(user);
       setTimeout(() => toast.success(`Welcome back ${user?.fullName ?? 'Admin'}!`), 3000);
     }
   }, [query.isLoading, query.isFetching, query.data]);

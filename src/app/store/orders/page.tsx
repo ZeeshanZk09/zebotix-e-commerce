@@ -113,7 +113,7 @@ export default function StoreOrders() {
                     onClick={() => openModal(order)}
                   >
                     <td className='pl-6 text-green-600'>{index + 1}</td>
-                    <td className='px-4 py-3'>{order.user?.connect?.name! as string}</td>
+                    <td className='px-4 py-3'>{order.user?.name! as string}</td>
                     <td className='px-4 py-3 font-medium text-slate-800'>${order.total}</td>
                     <td className='px-4 py-3'>{order.paymentMethod}</td>
                     <td className='px-4 py-3'>
@@ -168,24 +168,23 @@ export default function StoreOrders() {
             <div className='mb-4'>
               <h3 className='font-semibold mb-2'>Customer Details</h3>
               <p>
-                <span className='text-green-700'>Name:</span>{' '}
-                {selectedOrder.user?.connect?.name! as string}
+                <span className='text-green-700'>Name:</span> {selectedOrder.user?.name! as string}
               </p>
               <p>
                 <span className='text-green-700'>Email:</span>{' '}
-                {selectedOrder.user?.connect?.email! as string}
+                {selectedOrder.user?.email! as string}
               </p>
               <p>
                 <span className='text-green-700'>Phone:</span>{' '}
-                {selectedOrder.address?.connect?.phone as string}
+                {selectedOrder.address?.phone as string}
               </p>
               <p>
                 <span className='text-green-700'>Address:</span>{' '}
-                {`${selectedOrder.address?.connect?.street as string}, ${
-                  selectedOrder.address?.connect?.city as string
-                }, ${selectedOrder.address?.connect?.state as string}, ${
-                  selectedOrder.address?.connect?.zip as string
-                }, ${selectedOrder.address?.connect?.country as string}`}
+                {`${selectedOrder.address?.street as string}, ${
+                  selectedOrder.address?.city as string
+                }, ${selectedOrder.address?.state as string}, ${
+                  selectedOrder.address?.zip as string
+                }, ${selectedOrder.address?.country as string}`}
               </p>
             </div>
 

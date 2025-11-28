@@ -67,7 +67,7 @@ export default function Dashboard() {
                   height={100}
                 />
                 <div>
-                  <p className='font-medium'>{review.user.connect?.name! as string}</p>
+                  <p className='font-medium'>{review.user?.name! as string}</p>
                   <p className='font-light text-slate-500'>
                     {new Date(review.createdAt as Date).toDateString()}
                   </p>
@@ -77,8 +77,8 @@ export default function Dashboard() {
             </div>
             <div className='flex flex-col justify-between gap-6 sm:items-end'>
               <div className='flex flex-col sm:items-end'>
-                <p className='text-slate-400'>{review.product?.connect?.category as string}</p>
-                <p className='font-medium'>{review.product?.connect?.name as string}</p>
+                <p className='text-slate-400'>{review.product?.category as string}</p>
+                <p className='font-medium'>{review.product?.name as string}</p>
                 <div className='flex items-center'>
                   {Array(5)
                     .fill('')
@@ -93,7 +93,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <button
-                onClick={() => router.push(`/product/${review.product.connect?.id as string}`)}
+                onClick={() => router.push(`/product/${review.product?.id as string}`)}
                 className='bg-slate-100 px-5 py-2 hover:bg-slate-200 rounded transition-all'
               >
                 View Product
