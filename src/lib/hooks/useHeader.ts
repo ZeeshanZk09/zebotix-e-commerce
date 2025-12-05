@@ -149,14 +149,13 @@ export function useHeader(opts?: { prefetchMs?: number }) {
 
   // ---------- submit handler ----------
   const handleSearch = useCallback(
-    (query: string, e?: React.FormEvent<HTMLFormElement>) => {
+    (e: React.FormEvent<HTMLFormElement>) => {
       if (e) e.preventDefault();
       const q = (search ?? '').trim();
-      router.push(
-        `/shop${q ? `?search=${encodeURIComponent(q)}` : `?search=${encodeURIComponent(query)}`}`
-      );
+      if (!q) return toast.error('Please enter a search term.');
+      router.push(`/shop${q && `?search=${q}`}`);
     },
-    [router, search]
+    [search]
   );
 
   // ---------- auth/admin helper ----------
@@ -201,7 +200,6 @@ export function useHeader(opts?: { prefetchMs?: number }) {
   // Show success toast when loading finishes and we have data
   useEffect(() => {
     if (!storeQuery.isLoading && !storeQuery.isFetching && !shownSuccessToast.current) {
-      toast.success('Store fetched successfully.');
       shownSuccessToast.current = true;
     }
   }, [storeQuery.isLoading, storeQuery.isFetching]);

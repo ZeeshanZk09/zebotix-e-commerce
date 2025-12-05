@@ -1,35 +1,9 @@
-'use client';
-import { useAppSelector } from '@/lib/redux/hooks';
-import { ListOrdered, PackageIcon, Search, Shield, ShoppingCart, Store } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useUser, useClerk, UserButton, Protect } from '@clerk/nextjs';
-import { useAdmin } from '@/lib/hooks/useAdmin';
-import useHeader from '@/lib/hooks/useHeader';
-import { selectCartTotalQuantity } from '@/lib/redux/features/cart/cartSlice';
-import { RootState } from '@/lib/redux/store';
-const Navbar = () => {
-  const {
-    search,
-    user,
-    router,
-    isAdmin,
-    openSignIn,
-    setSearch,
-    handleSearch,
-    handleAuthAction,
-    isSeller,
-  } = useHeader();
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const cartCount = useAppSelector(selectCartTotalQuantity);
-  // console.log(cartCount);
-
+import NavbarAuth, { DebounceMobileNavbarAuth } from './DebounceNavbar';
+import SearchInput from './SearchInput';
+import CartCount from './CartCount';
+import { Protect } from '@clerk/nextjs';
+export default function Navbar() {
   return (
     <nav className='relative bg-white'>
       <div className='mx-6'>
@@ -51,126 +25,18 @@ const Navbar = () => {
             <Link href='/'>About</Link>
             <Link href='/'>Contact</Link>
 
-            <form
-              onSubmit={handleSearch as any}
-              className='hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full'
-            >
-              <Search size={18} className='text-slate-600' />
-              <input
-                className='w-full bg-transparent outline-none placeholder-slate-600'
-                type='text'
-                placeholder='Search products'
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                required
-              />
-            </form>
+            <SearchInput />
 
-            <Link href='/cart' className='relative flex items-center gap-2 text-slate-600'>
-              <ShoppingCart size={18} />
-              Cart
-              <button className='absolute -top-1 left-3 text-[8px] text-white bg-slate-600 size-3.5 rounded-full'>
-                {cartCount}
-              </button>
-            </Link>
+            <CartCount />
 
-            {mounted && user ? (
-              <UserButton>
-                <UserButton.MenuItems>
-                  <UserButton.Action
-                    labelIcon={<ListOrdered size={16} />}
-                    label='My Orders'
-                    onClick={() => router.push('/orders')}
-                  />
-                </UserButton.MenuItems>
-                {
-                  // admin
-                  isAdmin && (
-                    <UserButton.MenuItems>
-                      <UserButton.Action
-                        labelIcon={<Shield size={16} />}
-                        label='Admin Dashboard'
-                        onClick={() => router.push('/admin')}
-                      />
-                    </UserButton.MenuItems>
-                  )
-                }
-                {isSeller && (
-                  <UserButton.MenuItems>
-                    <UserButton.Action
-                      labelIcon={<Store size={16} />}
-                      label='Seller Dashboard'
-                      onClick={() => router.push('/store')}
-                    />
-                  </UserButton.MenuItems>
-                )}
-              </UserButton>
-            ) : (
-              <button
-                onClick={() => openSignIn()}
-                className='px-8 py-2 bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-full'
-              >
-                Login
-              </button>
-            )}
+            <NavbarAuth />
           </div>
 
           {/* Mobile User Button  */}
-          <div className='sm:hidden'>
-            {mounted && user ? (
-              <>
-                <UserButton>
-                  <UserButton.MenuItems>
-                    <UserButton.Action
-                      labelIcon={<ShoppingCart size={16} />}
-                      label='Cart'
-                      onClick={() => router.push('/cart')}
-                    />
-                  </UserButton.MenuItems>
-                  <UserButton.MenuItems>
-                    <UserButton.Action
-                      labelIcon={<ListOrdered size={16} />}
-                      label='My Orders'
-                      onClick={() => router.push('/orders')}
-                    />
-                  </UserButton.MenuItems>
-                  {
-                    // admin
-                    isAdmin && (
-                      <UserButton.MenuItems>
-                        <UserButton.Action
-                          labelIcon={<Shield size={16} />}
-                          label='Admin Dashboard'
-                          onClick={() => router.push('/admin')}
-                        />
-                      </UserButton.MenuItems>
-                    )
-                  }
-                  {isSeller && (
-                    <UserButton.MenuItems>
-                      <UserButton.Action
-                        labelIcon={<Store size={16} />}
-                        label='Seller Dashboard'
-                        onClick={() => router.push('/store')}
-                      />
-                    </UserButton.MenuItems>
-                  )}
-                </UserButton>
-              </>
-            ) : (
-              <button
-                onClick={() => openSignIn()}
-                className='px-7 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-sm transition text-white rounded-full'
-              >
-                Login
-              </button>
-            )}
-          </div>
+          <DebounceMobileNavbarAuth />
         </div>
       </div>
       <hr className='border-gray-300' />
     </nav>
   );
-};
-
-export default Navbar;
+}

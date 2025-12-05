@@ -59,7 +59,7 @@ export function useAdmin() {
     }
     if (query.data) {
       console.log(user);
-      setTimeout(() => toast.success(`Welcome back ${user?.fullName ?? 'Admin'}!`), 3000);
+      //   setTimeout(() => toast.success(`Welcome back ${user?.fullName ?? 'Admin'}!`), 3000);
     }
   }, [query.isLoading, query.isFetching, query.data]);
 

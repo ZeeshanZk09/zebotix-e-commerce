@@ -12,7 +12,7 @@ export default async function authSeller(userId: string) {
     });
 
     if (user?.store) {
-      if (user.store.status === 'approved') {
+      if (user.store.status === 'approved' && user.store.isActive) {
         return user.store.id;
       }
       return false;

@@ -1,8 +1,10 @@
-import useHeader from '@/lib/hooks/useHeader';
 import { categories } from './../../public/assets/assets';
 
 const CategoriesMarquee = () => {
-  const { handleSearch } = useHeader();
+  const handleSearch = (category: string) => {
+    window.location.href = `/shop${category && `?search=${category}`}`;
+  };
+
   return (
     <div className='overflow-hidden w-full relative max-w-7xl mx-auto select-none group sm:my-20'>
       <div className='absolute left-0 top-0 h-full w-20 z-10 pointer-events-none bg-linear-to-r from-white to-transparent' />
