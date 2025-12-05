@@ -119,7 +119,7 @@ export function DebounceMobileNavbarAuth({ actionDebounce = 600 }: Props) {
     return (
       <button
         onClick={() => handleAuthAction()}
-        className='px-8 py-2 bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed'
+        className='sm:hidden px-8 py-2 bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed'
         disabled={isPending}
       >
         Login
